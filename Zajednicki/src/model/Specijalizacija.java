@@ -11,7 +11,8 @@ import java.util.List;
  *
  * @author vukla
  */
-public class Specijalizacija implements ApstraktniDomenskiObjekat{
+public class Specijalizacija implements ApstraktniDomenskiObjekat {
+
     private int idSpecijalizacija;
     private String naziv;
 
@@ -41,7 +42,7 @@ public class Specijalizacija implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiNazivTabele() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "specijalizacija";
     }
 
     @Override
@@ -51,12 +52,12 @@ public class Specijalizacija implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiKoloneZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "naziv";
     }
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "'" + naziv + "'";
     }
 
     @Override
@@ -73,6 +74,5 @@ public class Specijalizacija implements ApstraktniDomenskiObjekat{
     public String vratiVrednostiZaIzmenu() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
-    
-    
+
 }

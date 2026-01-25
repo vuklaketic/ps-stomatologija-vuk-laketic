@@ -14,11 +14,12 @@ import java.util.List;
  *
  * @author vukla
  */
-public class Termin implements ApstraktniDomenskiObjekat{
+public class Termin implements ApstraktniDomenskiObjekat {
+
     private int idTermin;
     private LocalDate datum;
     private LocalTime vreme;
-    private StatusTermina status;  
+    private StatusTermina status;
     private String napomena;
     private Stomatolog stomatolog;
     private Pacijent pacijent;
@@ -29,7 +30,7 @@ public class Termin implements ApstraktniDomenskiObjekat{
     }
 
     public Termin(int idTermin, LocalDate datum, LocalTime vreme, StatusTermina status, String napomena,
-                  Stomatolog stomatolog, Pacijent pacijent) {
+            Stomatolog stomatolog, Pacijent pacijent) {
         this.idTermin = idTermin;
         this.datum = datum;
         this.vreme = vreme;
@@ -106,7 +107,7 @@ public class Termin implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiNazivTabele() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "termin";
     }
 
     @Override
@@ -116,12 +117,13 @@ public class Termin implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiKoloneZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "datum, vreme, status, napomena, idStomatolog, idPacijent";
     }
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "'" + datum + "','" + vreme + "','" + status.name() + "','" + napomena + "',"
+                + stomatolog.getIdStomatolog() + "," + pacijent.getIdPacijent();
     }
 
     @Override
@@ -138,5 +140,5 @@ public class Termin implements ApstraktniDomenskiObjekat{
     public String vratiVrednostiZaIzmenu() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
-  
+
 }

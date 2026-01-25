@@ -11,7 +11,8 @@ import java.util.List;
  *
  * @author vukla
  */
-public class Pacijent implements ApstraktniDomenskiObjekat{
+public class Pacijent implements ApstraktniDomenskiObjekat {
+
     private int idPacijent;
     private String ime;
     private String prezime;
@@ -23,7 +24,7 @@ public class Pacijent implements ApstraktniDomenskiObjekat{
     }
 
     public Pacijent(int idPacijent, String ime, String prezime, String brojTelefona,
-                    String brojKnjizice, Ordinacija ordinacija) {
+            String brojKnjizice, Ordinacija ordinacija) {
         this.idPacijent = idPacijent;
         this.ime = ime;
         this.prezime = prezime;
@@ -82,7 +83,7 @@ public class Pacijent implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiNazivTabele() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "pacijent";
     }
 
     @Override
@@ -92,12 +93,12 @@ public class Pacijent implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiKoloneZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "ime, prezime, brojTelefona, brojKnjizice, idOrdinacija";
     }
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "'" + ime + "','" + prezime + "','" + brojTelefona + "','" + brojKnjizice + "'," + ordinacija.getIdOrdinacija();
     }
 
     @Override
@@ -114,5 +115,5 @@ public class Pacijent implements ApstraktniDomenskiObjekat{
     public String vratiVrednostiZaIzmenu() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
-    
+
 }

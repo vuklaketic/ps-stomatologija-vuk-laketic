@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author vukla
  */
-public class StSpec implements ApstraktniDomenskiObjekat{
+public class StSpec implements ApstraktniDomenskiObjekat {
 
     private LocalDate datumSticanja;
     private Stomatolog stomatolog;
@@ -53,7 +53,7 @@ public class StSpec implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiNazivTabele() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "stspec";
     }
 
     @Override
@@ -63,12 +63,12 @@ public class StSpec implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiKoloneZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "idStomatolog, idSpecijalizacija, datumSticanja";
     }
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return stomatolog.getIdStomatolog() + "," + specijalizacija.getIdSpecijalizacija() + ",'" + datumSticanja + "'";
     }
 
     @Override
@@ -85,6 +85,5 @@ public class StSpec implements ApstraktniDomenskiObjekat{
     public String vratiVrednostiZaIzmenu() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
-    
-    
+
 }

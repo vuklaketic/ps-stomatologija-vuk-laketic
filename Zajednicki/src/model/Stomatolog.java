@@ -11,7 +11,8 @@ import java.util.List;
  *
  * @author vukla
  */
-public class Stomatolog implements ApstraktniDomenskiObjekat{
+public class Stomatolog implements ApstraktniDomenskiObjekat {
+
     private int idStomatolog;
     private String ime;
     private String prezime;
@@ -91,7 +92,7 @@ public class Stomatolog implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiNazivTabele() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "stomatolog";
     }
 
     @Override
@@ -101,12 +102,12 @@ public class Stomatolog implements ApstraktniDomenskiObjekat{
 
     @Override
     public String vratiKoloneZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "ime, prezime, email, korisnickoIme, sifra, brojLicence";
     }
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "'" + ime + "','" + prezime + "','" + email + "','" + korisnickoIme + "','" + sifra + "','" + brojLicence + "'";
     }
 
     @Override
@@ -123,5 +124,5 @@ public class Stomatolog implements ApstraktniDomenskiObjekat{
     public String vratiVrednostiZaIzmenu() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
-    
+
 }

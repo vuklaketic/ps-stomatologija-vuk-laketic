@@ -128,7 +128,7 @@ public class Termin implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiPrimarniKljuc() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "idTermin=" + idTermin;
     }
 
     @Override
@@ -138,7 +138,8 @@ public class Termin implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "datum='" + datum + "', vreme='" + vreme + "', status='" + status.name() + "', napomena='" + napomena
+                + "', idStomatolog=" + stomatolog.getIdStomatolog() + ", idPacijent=" + pacijent.getIdPacijent();
     }
 
 }

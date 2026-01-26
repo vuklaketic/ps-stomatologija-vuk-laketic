@@ -5,6 +5,7 @@
 package model;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,7 +63,16 @@ public class Ordinacija implements ApstraktniDomenskiObjekat {
 
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = new ArrayList();
+        while (rs.next()) {
+            int idOrdinacija = rs.getInt("ordinacija.idOrdinacija");
+            String naziv = rs.getString("ordinacija.naziv");
+            String adresa = rs.getString("ordinacija.adresa");
+
+            Ordinacija o = new Ordinacija(idOrdinacija, naziv, adresa);
+            lista.add(o);
+        }
+        return lista;
     }
 
     @Override
@@ -77,7 +87,7 @@ public class Ordinacija implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiPrimarniKljuc() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "idOrdinacija=" + idOrdinacija;
     }
 
     @Override
@@ -87,7 +97,7 @@ public class Ordinacija implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "naziv='" + naziv + "', adresa='" + adresa + "'";
     }
 
 }

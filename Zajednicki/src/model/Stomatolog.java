@@ -5,8 +5,8 @@
 package model;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
-
 /**
  *
  * @author vukla
@@ -97,7 +97,20 @@ public class Stomatolog implements ApstraktniDomenskiObjekat {
 
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = new ArrayList();
+        while (rs.next()) {
+            int idStomatolog = rs.getInt("stomatolog.idStomatolog");
+            String ime = rs.getString("stomatolog.ime");
+            String prezime = rs.getString("stomatolog.prezime");
+            String email = rs.getString("stomatolog.email");
+            String korisnickoIme = rs.getString("stomatolog.korisnickoIme");
+            String sifra = rs.getString("stomatolog.sifra");
+            String brojLicence = rs.getString("stomatolog.brojLicence");
+
+            Stomatolog s = new Stomatolog(idStomatolog, ime, prezime, email, korisnickoIme, sifra, brojLicence);
+            lista.add(s);
+        }
+        return lista;
     }
 
     @Override
@@ -112,7 +125,7 @@ public class Stomatolog implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiPrimarniKljuc() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "idStomatolog=" + idStomatolog;
     }
 
     @Override
@@ -122,7 +135,8 @@ public class Stomatolog implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "ime='" + ime + "', prezime='" + prezime + "', email='" + email + "', korisnickoIme='" + korisnickoIme
+                + "', sifra='" + sifra + "', brojLicence='" + brojLicence + "'";
     }
 
 }

@@ -103,7 +103,7 @@ public class Pacijent implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiPrimarniKljuc() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "idPacijent=" + idPacijent;
     }
 
     @Override
@@ -113,7 +113,8 @@ public class Pacijent implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "ime='" + ime + "', prezime='" + prezime + "', brojTelefona='" + brojTelefona
+                + "', brojKnjizice='" + brojKnjizice + "', idOrdinacija=" + ordinacija.getIdOrdinacija();
     }
 
 }

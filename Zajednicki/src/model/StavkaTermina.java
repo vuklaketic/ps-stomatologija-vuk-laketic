@@ -103,7 +103,7 @@ public class StavkaTermina implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiPrimarniKljuc() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "idTermin=" + termin.getIdTermin() + " AND rb=" + rb;
     }
 
     @Override
@@ -113,7 +113,6 @@ public class StavkaTermina implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "kolicina=" + kolicina + ", iznos=" + iznos + ", cenaUsluge=" + cenaUsluge + ", idUsluga=" + usluga.getIdUsluga();
     }
-
 }

@@ -73,7 +73,8 @@ public class StSpec implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiPrimarniKljuc() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "idStomatolog=" + stomatolog.getIdStomatolog()
+                + " AND idSpecijalizacija=" + specijalizacija.getIdSpecijalizacija();
     }
 
     @Override
@@ -83,7 +84,7 @@ public class StSpec implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "datumSticanja='" + datumSticanja + "'";
     }
 
 }

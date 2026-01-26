@@ -5,6 +5,7 @@
 package model;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -67,7 +68,17 @@ public class Usluga implements ApstraktniDomenskiObjekat {
 
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = new ArrayList();
+        while (rs.next()) {
+            int idUsluga = rs.getInt("usluga.idUsluga");
+            String naziv = rs.getString("usluga.naziv");
+            double cena = rs.getDouble("usluga.cena");
+            int trajanje = rs.getInt("usluga.trajanje");
+
+            Usluga u = new Usluga(idUsluga, naziv, cena, trajanje);
+            lista.add(u);
+        }
+        return lista;
     }
 
     @Override
@@ -82,7 +93,7 @@ public class Usluga implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiPrimarniKljuc() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "idUsluga=" + idUsluga;
     }
 
     @Override
@@ -92,7 +103,7 @@ public class Usluga implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "naziv='" + naziv + "', cena=" + cena + ", trajanje=" + trajanje;
     }
 
 }

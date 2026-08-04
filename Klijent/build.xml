@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Samostalan Ant build za klijentski modul.
+    Kompajlira zajedno izvorni kod modula Zajednicki i modula Klijent,
+    jer klijent koristi domenske i komunikacione klase iz Zajednickog.
+
+    Pokretanje:
+        ant            (podrazumevano: compile)
+        ant jar        (pravi dist/Klijent.jar)
+        ant run        (pokrece klijentsku aplikaciju)
+        ant clean
+-->
+<project name="Klijent" default="compile" basedir=".">
+
+    <property name="src.dir" location="src"/>
+    <property name="zajednicki.src.dir" location="../Zajednicki/src"/>
+    <property name="build.dir" location="build"/>
+    <property name="classes.dir" location="${build.dir}/classes"/>
+    <property name="dist.dir" location="dist"/>
+    <property name="main.class" value="Main"/>
+
+    <target name="clean" description="Brise generisane fajlove">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="compile" description="Kompajlira Zajednicki i Klijent">
+        <mkdir dir="${classes.dir}"/>
+        <javac destdir="${classes.dir}" encoding="UTF-8" includeantruntime="false" debug="true">
+            <src path="${zajednicki.src.dir}"/>
+            <src path="${src.dir}"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile" description="Pravi izvrsni jar">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.dir}/Klijent.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="compile" description="Pokrece klijentsku aplikaciju">
+        <java classname="${main.class}" classpath="${classes.dir}" fork="true"/>
+    </target>
+
+</project>

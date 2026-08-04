@@ -8,7 +8,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -20,9 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import komunikacija.Komunikacija;
-import komunikacija.Odgovor;
-import komunikacija.Operacija;
+import kontroler.Kontroler;
 import model.Stomatolog;
 import model.Termin;
 
@@ -43,8 +40,8 @@ public class GlavnaForma extends JFrame {
     private JButton btnObrisi;
     private JButton btnOsvezi;
 
-    public GlavnaForma(Stomatolog ulogovaniStomatolog) {
-        this.ulogovaniStomatolog = ulogovaniStomatolog;
+    public GlavnaForma() {
+        this.ulogovaniStomatolog = Kontroler.getInstanca().getUlogovaniStomatolog();
         inicijalizujKomponente();
         ucitajTermine();
     }
@@ -94,30 +91,20 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
-     * Ucitava sa servera listu termina ulogovanog stomatologa i prikazuje ih u tabeli.
+     * Ucitava termine ulogovanog stomatologa i prikazuje ih u tabeli.
      */
-    @SuppressWarnings("unchecked")
     public final void ucitajTermine() {
-        Komunikacija komunikacija = vratiKomunikaciju();
-        if (komunikacija == null) {
-            return;
+        try {
+            List<Termin> termini = Kontroler.getInstanca().vratiTermineUlogovanog();
+            modelTabele.postaviListu(termini);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Greška", JOptionPane.ERROR_MESSAGE);
         }
-
-        String kriterijum = "idStomatolog = " + ulogovaniStomatolog.getIdStomatolog();
-        Odgovor odgovor = komunikacija.posaljiZahtev(Operacija.VRATI_LISTU_TERMINA, kriterijum);
-
-        if (odgovor == null) {
-            prikaziGreskuKomunikacije();
-            return;
-        }
-
-        List<Termin> termini = (List<Termin>) odgovor.getOdgovor();
-        modelTabele.postaviListu(termini);
     }
 
     private void noviTermin() {
-        NoviTerminDijalog dijalog = new NoviTerminDijalog(this, ulogovaniStomatolog, null);
-        dijalog.setVisible(true);
+        new NoviTerminDijalog(this, null).setVisible(true);
     }
 
     private void izmeniTermin() {
@@ -125,8 +112,7 @@ public class GlavnaForma extends JFrame {
         if (izabrani == null) {
             return;
         }
-        NoviTerminDijalog dijalog = new NoviTerminDijalog(this, ulogovaniStomatolog, izabrani);
-        dijalog.setVisible(true);
+        new NoviTerminDijalog(this, izabrani).setVisible(true);
     }
 
     private void obrisiTermin() {
@@ -142,26 +128,17 @@ public class GlavnaForma extends JFrame {
             return;
         }
 
-        Komunikacija komunikacija = vratiKomunikaciju();
-        if (komunikacija == null) {
-            return;
-        }
-
-        Odgovor odgovor = komunikacija.posaljiZahtev(Operacija.OBRISI_TERMIN, izabrani);
-        if (odgovor == null) {
-            prikaziGreskuKomunikacije();
-            return;
-        }
-
-        Boolean uspesno = (Boolean) odgovor.getOdgovor();
-        if (uspesno != null && uspesno) {
-            JOptionPane.showMessageDialog(this, "Termin je uspešno obrisan.",
-                    "Uspeh", JOptionPane.INFORMATION_MESSAGE);
-            ucitajTermine();
-        } else {
-            JOptionPane.showMessageDialog(this, "Brisanje termina nije uspelo.",
+        try {
+            Kontroler.getInstanca().obrisiTermin(izabrani);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        JOptionPane.showMessageDialog(this, "Termin je uspešno obrisan.",
+                "Uspeh", JOptionPane.INFORMATION_MESSAGE);
+        ucitajTermine();
     }
 
     /**
@@ -177,29 +154,8 @@ public class GlavnaForma extends JFrame {
         return modelTabele.vratiTermin(tabelaTermina.convertRowIndexToModel(red));
     }
 
-    private Komunikacija vratiKomunikaciju() {
-        try {
-            return Komunikacija.getInstanca();
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Server nije dostupan. Proverite da li je server pokrenut.",
-                    "Greška", JOptionPane.ERROR_MESSAGE);
-            return null;
-        }
-    }
-
-    private void prikaziGreskuKomunikacije() {
-        JOptionPane.showMessageDialog(this,
-                "Greška u komunikaciji sa serverom.",
-                "Greška", JOptionPane.ERROR_MESSAGE);
-    }
-
     private void zatvoriAplikaciju() {
-        try {
-            Komunikacija.getInstanca().zatvoriVezu();
-        } catch (IOException ex) {
-            // veza ionako nije uspostavljena, nema sta da se zatvara
-        }
+        Kontroler.getInstanca().odjaviSe();
         dispose();
         System.exit(0);
     }

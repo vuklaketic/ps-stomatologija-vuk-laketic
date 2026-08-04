@@ -10,7 +10,6 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -27,21 +26,18 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import komunikacija.Komunikacija;
-import komunikacija.Odgovor;
-import komunikacija.Operacija;
+import kontroler.Kontroler;
 import model.Pacijent;
 import model.StatusTermina;
 import model.StavkaTermina;
-import model.Stomatolog;
 import model.Termin;
 import model.Usluga;
 
 /**
  * Modalni dijalog za unos novog termina, odnosno za izmenu postojeceg.
  *
- * Ako je u konstruktoru prosledjen termin, dijalog radi u rezimu izmene
- * (salje PROMENI_TERMIN), u suprotnom kreira novi termin (salje UBACI_TERMIN).
+ * Ako je u konstruktoru prosledjen termin, dijalog radi u rezimu izmene,
+ * u suprotnom kreira novi termin.
  *
  * @author vukla
  */
@@ -51,7 +47,6 @@ public class NoviTerminDijalog extends JDialog {
     private static final DateTimeFormatter FORMAT_VREMENA = DateTimeFormatter.ofPattern("HH:mm");
 
     private final GlavnaForma roditeljskaForma;
-    private final Stomatolog ulogovaniStomatolog;
     private final Termin terminZaIzmenu;
 
     private JComboBox<Pacijent> cmbPacijent;
@@ -63,11 +58,9 @@ public class NoviTerminDijalog extends JDialog {
     private JButton btnPotvrdi;
     private JButton btnOdustani;
 
-    public NoviTerminDijalog(GlavnaForma roditeljskaForma, Stomatolog ulogovaniStomatolog,
-            Termin terminZaIzmenu) {
+    public NoviTerminDijalog(GlavnaForma roditeljskaForma, Termin terminZaIzmenu) {
         super(roditeljskaForma, true);
         this.roditeljskaForma = roditeljskaForma;
-        this.ulogovaniStomatolog = ulogovaniStomatolog;
         this.terminZaIzmenu = terminZaIzmenu;
 
         inicijalizujKomponente();
@@ -134,34 +127,24 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Ucitava sa servera liste pacijenata i usluga i puni combo box-ove.
+     * Ucitava liste pacijenata i usluga i puni combo box-ove.
      */
-    @SuppressWarnings("unchecked")
     private void ucitajListe() {
-        Komunikacija komunikacija = vratiKomunikaciju();
-        if (komunikacija == null) {
-            return;
-        }
-
-        Odgovor odgovorPacijenti = komunikacija.posaljiZahtev(Operacija.VRATI_LISTU_PACIJENATA, null);
-        if (odgovorPacijenti != null && odgovorPacijenti.getOdgovor() != null) {
-            List<Pacijent> pacijenti = (List<Pacijent>) odgovorPacijenti.getOdgovor();
-            for (Pacijent p : pacijenti) {
+        try {
+            for (Pacijent p : Kontroler.getInstanca().vratiListuPacijenata()) {
                 cmbPacijent.addItem(p);
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "Neuspešno učitavanje liste pacijenata.",
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
         }
 
-        Odgovor odgovorUsluge = komunikacija.posaljiZahtev(Operacija.VRATI_LISTU_USLUGA, null);
-        if (odgovorUsluge != null && odgovorUsluge.getOdgovor() != null) {
-            List<Usluga> usluge = (List<Usluga>) odgovorUsluge.getOdgovor();
-            for (Usluga u : usluge) {
+        try {
+            for (Usluga u : Kontroler.getInstanca().vratiListuUsluga()) {
                 cmbUsluga.addItem(u);
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "Neuspešno učitavanje liste usluga.",
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -217,7 +200,7 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Validira unos, pravi termin i salje ga serveru.
+     * Validira unos, pravi termin i prosledjuje ga kontroleru.
      */
     private void potvrdi() {
         Pacijent pacijent = (Pacijent) cmbPacijent.getSelectedItem();
@@ -259,7 +242,7 @@ public class NoviTerminDijalog extends JDialog {
         int idTermin = jeIzmena() ? terminZaIzmenu.getIdTermin() : 0;
 
         Termin termin = new Termin(idTermin, datum, vreme, status, napomena,
-                ulogovaniStomatolog, pacijent);
+                Kontroler.getInstanca().getUlogovaniStomatolog(), pacijent);
 
         // konstruktor termina ne prima stavke - pravi praznu listu, pa se
         // izabrana usluga dodaje kao stavka naknadno
@@ -269,27 +252,15 @@ public class NoviTerminDijalog extends JDialog {
                 usluga.getCena(), termin, usluga));
         termin.setStavke(stavke);
 
-        Komunikacija komunikacija = vratiKomunikaciju();
-        if (komunikacija == null) {
-            return;
-        }
-
-        Operacija operacija = jeIzmena() ? Operacija.PROMENI_TERMIN : Operacija.UBACI_TERMIN;
-        Odgovor odgovor = komunikacija.posaljiZahtev(operacija, termin);
-
-        if (odgovor == null) {
-            JOptionPane.showMessageDialog(this, "Greška u komunikaciji sa serverom.",
-                    "Greška", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Boolean uspesno = (Boolean) odgovor.getOdgovor();
-        if (uspesno == null || !uspesno) {
+        try {
+            if (jeIzmena()) {
+                Kontroler.getInstanca().promeniTermin(termin);
+            } else {
+                Kontroler.getInstanca().ubaciTermin(termin);
+            }
+        } catch (Exception ex) {
             // dijalog ostaje otvoren da korisnik moze da ispravi podatke
-            JOptionPane.showMessageDialog(this,
-                    jeIzmena()
-                            ? "Izmena termina nije uspela. Proverite da li je termin zauzet."
-                            : "Zakazivanje termina nije uspelo. Proverite da li je termin zauzet.",
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -304,17 +275,6 @@ public class NoviTerminDijalog extends JDialog {
 
     private boolean jeIzmena() {
         return terminZaIzmenu != null;
-    }
-
-    private Komunikacija vratiKomunikaciju() {
-        try {
-            return Komunikacija.getInstanca();
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Server nije dostupan. Proverite da li je server pokrenut.",
-                    "Greška", JOptionPane.ERROR_MESSAGE);
-            return null;
-        }
     }
 
     /**

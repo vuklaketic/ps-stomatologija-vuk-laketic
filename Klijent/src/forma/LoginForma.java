@@ -7,7 +7,6 @@ package forma;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.io.IOException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,10 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import komunikacija.Komunikacija;
-import komunikacija.Odgovor;
-import komunikacija.Operacija;
-import model.Stomatolog;
+import kontroler.Kontroler;
 
 /**
  * Forma za prijavu stomatologa na sistem.
@@ -88,7 +84,8 @@ public class LoginForma extends JFrame {
     }
 
     /**
-     * Šalje serveru zahtev za prijavu i, ako je prijava uspešna, otvara glavnu formu.
+     * Šalje zahtev za prijavu preko kontrolera i, ako je prijava uspešna,
+     * otvara glavnu formu.
      */
     private void prijaviSe() {
         String korisnickoIme = txtKorisnickoIme.getText().trim();
@@ -101,37 +98,16 @@ public class LoginForma extends JFrame {
             return;
         }
 
-        Komunikacija komunikacija;
         try {
-            komunikacija = Komunikacija.getInstanca();
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Server nije dostupan. Proverite da li je server pokrenut.",
-                    "Greška", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Odgovor odgovor = komunikacija.posaljiZahtev(
-                Operacija.PRIJAVA_STOMATOLOG,
-                new Object[]{korisnickoIme, sifra});
-
-        if (odgovor == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Greška u komunikaciji sa serverom.",
-                    "Greška", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        if (odgovor.getOdgovor() == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Pogrešno korisničko ime ili šifra",
+            Kontroler.getInstanca().prijaviSe(korisnickoIme, sifra);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Neuspešna prijava", JOptionPane.ERROR_MESSAGE);
             txtSifra.setText("");
             return;
         }
 
-        Stomatolog ulogovani = (Stomatolog) odgovor.getOdgovor();
-        new GlavnaForma(ulogovani).setVisible(true);
+        new GlavnaForma().setVisible(true);
         dispose();
     }
 }

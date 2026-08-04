@@ -11,5 +11,21 @@ import java.io.Serializable;
  * @author vukla
  */
 public enum Operacija implements Serializable {
-    LOGIN;
+    LOGIN,
+
+    // prijava stomatologa na sistem
+    PRIJAVA_STOMATOLOG,
+
+    // operacije nad terminom
+    KREIRAJ_TERMIN,
+    UBACI_TERMIN,
+    PROMENI_TERMIN,
+    OBRISI_TERMIN,
+    PRETRAZI_TERMIN,
+
+    // ucitavanje lista
+    VRATI_LISTU_TERMINA,
+    VRATI_LISTU_STOMATOLOGA,
+    VRATI_LISTU_PACIJENATA,
+    VRATI_LISTU_USLUGA;
 }

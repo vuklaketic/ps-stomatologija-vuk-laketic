@@ -9,6 +9,7 @@ import java.util.List;
 import komunikacija.Komunikacija;
 import komunikacija.Odgovor;
 import komunikacija.Operacija;
+import komunikacija.TipOdgovora;
 import model.Pacijent;
 import model.Stomatolog;
 import model.Termin;
@@ -19,10 +20,11 @@ import model.Usluga;
  *
  * Forme ne prave Zahtev niti kastuju sirov Object iz odgovora, vec pozivaju
  * domenski imenovane metode ove klase. Sve greske se prijavljuju bacanjem
- * izuzetka, pa forma samo hvata Exception i prikazuje poruku.
+ * izuzetka, pa forma samo hvata Exception i prikazuje poruku. Poruka pritom
+ * stize sa servera, sa mesta na kome je greska i nastala.
  *
- * Ovde je na jednom mestu sakupljen i oblik parametara koji se salje serveru,
- * pa se eventualno usaglasavanje sa serverom radi samo u ovoj klasi.
+ * Kriterijumi pretrage se serveru salju kao domenski objekti, a ne kao delovi
+ * SQL upita - klijent ne poznaje ni tabele ni kolone baze.
  *
  * @author vukla
  */
@@ -53,14 +55,8 @@ public class Kontroler {
      * @throws Exception ako su podaci pogresni ili server nije dostupan
      */
     public Stomatolog prijaviSe(String korisnickoIme, String sifra) throws Exception {
-        Object rezultat = posalji(Operacija.PRIJAVA_STOMATOLOG,
+        ulogovaniStomatolog = (Stomatolog) posalji(Operacija.PRIJAVA_STOMATOLOG,
                 new Object[]{korisnickoIme, sifra});
-
-        if (rezultat == null) {
-            throw new Exception("Pogrešno korisničko ime ili šifra");
-        }
-
-        ulogovaniStomatolog = (Stomatolog) rezultat;
         return ulogovaniStomatolog;
     }
 
@@ -77,10 +73,13 @@ public class Kontroler {
     }
 
     /**
-     * Vraca termine koji zadovoljavaju zadati kriterijum (WHERE klauza).
+     * Vraca termine koji odgovaraju zadatom kriterijumu.
+     *
+     * @param kriterijum termin sa popunjenim podacima po kojima se pretrazuje;
+     *                   ako je stomatolog postavljen, vracaju se samo njegovi termini
      */
     @SuppressWarnings("unchecked")
-    public List<Termin> vratiListuTermina(String kriterijum) throws Exception {
+    public List<Termin> vratiListuTermina(Termin kriterijum) throws Exception {
         return (List<Termin>) posalji(Operacija.VRATI_LISTU_TERMINA, kriterijum);
     }
 
@@ -91,68 +90,52 @@ public class Kontroler {
         if (ulogovaniStomatolog == null) {
             throw new Exception("Nijedan stomatolog nije prijavljen na sistem.");
         }
-        return vratiListuTermina("idStomatolog = " + ulogovaniStomatolog.getIdStomatolog());
+        Termin kriterijum = new Termin();
+        kriterijum.setStomatolog(ulogovaniStomatolog);
+        return vratiListuTermina(kriterijum);
     }
 
     @SuppressWarnings("unchecked")
     public List<Pacijent> vratiListuPacijenata() throws Exception {
-        List<Pacijent> pacijenti = (List<Pacijent>) posalji(Operacija.VRATI_LISTU_PACIJENATA, null);
-        if (pacijenti == null) {
-            throw new Exception("Neuspešno učitavanje liste pacijenata.");
-        }
-        return pacijenti;
+        return (List<Pacijent>) posalji(Operacija.VRATI_LISTU_PACIJENATA, null);
     }
 
     @SuppressWarnings("unchecked")
     public List<Usluga> vratiListuUsluga() throws Exception {
-        List<Usluga> usluge = (List<Usluga>) posalji(Operacija.VRATI_LISTU_USLUGA, null);
-        if (usluge == null) {
-            throw new Exception("Neuspešno učitavanje liste usluga.");
-        }
-        return usluge;
+        return (List<Usluga>) posalji(Operacija.VRATI_LISTU_USLUGA, null);
     }
 
     @SuppressWarnings("unchecked")
     public List<Stomatolog> vratiListuStomatologa() throws Exception {
-        List<Stomatolog> stomatolozi = (List<Stomatolog>) posalji(Operacija.VRATI_LISTU_STOMATOLOGA, null);
-        if (stomatolozi == null) {
-            throw new Exception("Neuspešno učitavanje liste stomatologa.");
-        }
-        return stomatolozi;
-    }
-
-    public Termin pretraziTermin(int idTermin) throws Exception {
-        return (Termin) posalji(Operacija.PRETRAZI_TERMIN, idTermin);
-    }
-
-    public void ubaciTermin(Termin termin) throws Exception {
-        proveriUspeh(posalji(Operacija.UBACI_TERMIN, termin),
-                "Zakazivanje termina nije uspelo. Proverite da li je termin zauzet.");
-    }
-
-    public void promeniTermin(Termin termin) throws Exception {
-        proveriUspeh(posalji(Operacija.PROMENI_TERMIN, termin),
-                "Izmena termina nije uspela. Proverite da li je termin zauzet.");
-    }
-
-    public void obrisiTermin(Termin termin) throws Exception {
-        proveriUspeh(posalji(Operacija.OBRISI_TERMIN, termin),
-                "Brisanje termina nije uspelo.");
+        return (List<Stomatolog>) posalji(Operacija.VRATI_LISTU_STOMATOLOGA, null);
     }
 
     /**
-     * Server na operacije ubacivanja/izmene/brisanja vraca Boolean.
+     * Pronalazi termin sa zadatim identifikatorom.
      */
-    private void proveriUspeh(Object rezultat, String porukaGreske) throws Exception {
-        if (!(rezultat instanceof Boolean) || !((Boolean) rezultat)) {
-            throw new Exception(porukaGreske);
-        }
+    public Termin pretraziTermin(int idTermin) throws Exception {
+        Termin kriterijum = new Termin();
+        kriterijum.setIdTermin(idTermin);
+        return (Termin) posalji(Operacija.PRETRAZI_TERMIN, kriterijum);
+    }
+
+    public void ubaciTermin(Termin termin) throws Exception {
+        posalji(Operacija.UBACI_TERMIN, termin);
+    }
+
+    public void promeniTermin(Termin termin) throws Exception {
+        posalji(Operacija.PROMENI_TERMIN, termin);
+    }
+
+    public void obrisiTermin(Termin termin) throws Exception {
+        posalji(Operacija.OBRISI_TERMIN, termin);
     }
 
     /**
      * Salje zahtev serveru i vraca sadrzaj odgovora.
      *
-     * @throws Exception ako server nije dostupan ili je komunikacija pukla
+     * @throws Exception ako server nije dostupan, ako je komunikacija pukla ili
+     *                   ako je operacija na serveru zavrsila greskom
      */
     private Object posalji(Operacija operacija, Object parametar) throws Exception {
         Komunikacija komunikacija;
@@ -166,6 +149,12 @@ public class Kontroler {
         if (odgovor == null) {
             throw new Exception("Greška u komunikaciji sa serverom.");
         }
+
+        if (odgovor.getTip() == TipOdgovora.GRESKA) {
+            Exception izuzetak = odgovor.getIzuzetak();
+            throw izuzetak != null ? izuzetak : new Exception("Operacija nije uspela.");
+        }
+
         return odgovor.getOdgovor();
     }
 }

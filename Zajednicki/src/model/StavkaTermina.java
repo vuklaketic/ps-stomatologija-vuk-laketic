@@ -14,6 +14,14 @@ import java.util.List;
  */
 public class StavkaTermina implements ApstraktniDomenskiObjekat {
 
+    /**
+     * Spajanje sa uslugom, da bi stavka nosila pun podatak o usluzi.
+     * Termin se ne spaja - njega postavlja sistemska operacija koja je ucitala
+     * stavke, jer je termin vec poznat u tom trenutku.
+     */
+    public static final String SPOJEVI =
+            " JOIN usluga ON stavkatermina.idUsluga = usluga.idUsluga";
+
     private int rb;
     private Termin termin;
     private int kolicina;
@@ -87,10 +95,6 @@ public class StavkaTermina implements ApstraktniDomenskiObjekat {
         return "stavkatermina";
     }
 
-    /**
-     * Termin i usluga se kreiraju samo sa identifikatorom, jer upit cita iskljucivo
-     * kolone tabele stavkatermina. Pune objekte popunjava serverski kontroler.
-     */
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
         List<ApstraktniDomenskiObjekat> lista = new ArrayList<>();
@@ -103,8 +107,11 @@ public class StavkaTermina implements ApstraktniDomenskiObjekat {
             Termin termin = new Termin();
             termin.setIdTermin(rs.getInt("stavkatermina.idTermin"));
 
-            Usluga usluga = new Usluga();
-            usluga.setIdUsluga(rs.getInt("stavkatermina.idUsluga"));
+            Usluga usluga = new Usluga(
+                    rs.getInt("usluga.idUsluga"),
+                    rs.getString("usluga.naziv"),
+                    rs.getDouble("usluga.cena"),
+                    rs.getInt("usluga.trajanje"));
 
             StavkaTermina st = new StavkaTermina(rb, kolicina, iznos, cenaUsluge, termin, usluga);
             lista.add(st);

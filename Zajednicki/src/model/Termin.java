@@ -16,6 +16,16 @@ import java.util.List;
  */
 public class Termin implements ApstraktniDomenskiObjekat {
 
+    /**
+     * Spajanja koja upit mora da sadrzi da bi metoda vratiListu mogla da napuni
+     * i stomatologa i pacijenta zajedno sa njegovom ordinacijom. Sistemske
+     * operacije ovaj deo upita prosledjuju brokeru kao deo uslova.
+     */
+    public static final String SPOJEVI =
+            " JOIN stomatolog ON termin.idStomatolog = stomatolog.idStomatolog"
+            + " JOIN pacijent ON termin.idPacijent = pacijent.idPacijent"
+            + " JOIN ordinacija ON pacijent.idOrdinacija = ordinacija.idOrdinacija";
+
     private int idTermin;
     private LocalDate datum;
     private LocalTime vreme;
@@ -110,11 +120,6 @@ public class Termin implements ApstraktniDomenskiObjekat {
         return "termin";
     }
 
-    /**
-     * Stomatolog i pacijent se kreiraju samo sa identifikatorom, jer upit cita
-     * iskljucivo kolone tabele termin. Pune objekte, kao i listu stavki,
-     * popunjava serverski kontroler.
-     */
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
         List<ApstraktniDomenskiObjekat> lista = new ArrayList<>();
@@ -132,11 +137,27 @@ public class Termin implements ApstraktniDomenskiObjekat {
 
             String napomena = rs.getString("termin.napomena");
 
-            Stomatolog stomatolog = new Stomatolog();
-            stomatolog.setIdStomatolog(rs.getInt("termin.idStomatolog"));
+            Stomatolog stomatolog = new Stomatolog(
+                    rs.getInt("stomatolog.idStomatolog"),
+                    rs.getString("stomatolog.ime"),
+                    rs.getString("stomatolog.prezime"),
+                    rs.getString("stomatolog.email"),
+                    rs.getString("stomatolog.korisnickoIme"),
+                    rs.getString("stomatolog.sifra"),
+                    rs.getString("stomatolog.brojLicence"));
 
-            Pacijent pacijent = new Pacijent();
-            pacijent.setIdPacijent(rs.getInt("termin.idPacijent"));
+            Ordinacija ordinacija = new Ordinacija(
+                    rs.getInt("ordinacija.idOrdinacija"),
+                    rs.getString("ordinacija.naziv"),
+                    rs.getString("ordinacija.adresa"));
+
+            Pacijent pacijent = new Pacijent(
+                    rs.getInt("pacijent.idPacijent"),
+                    rs.getString("pacijent.ime"),
+                    rs.getString("pacijent.prezime"),
+                    rs.getString("pacijent.brojTelefona"),
+                    rs.getString("pacijent.brojKnjizice"),
+                    ordinacija);
 
             Termin t = new Termin(idTermin, datum, vreme, status, napomena, stomatolog, pacijent);
             lista.add(t);

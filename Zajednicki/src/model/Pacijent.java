@@ -14,6 +14,12 @@ import java.util.List;
  */
 public class Pacijent implements ApstraktniDomenskiObjekat {
 
+    /**
+     * Spajanje sa ordinacijom, jer pacijent uvek pripada tacno jednoj ordinaciji.
+     */
+    public static final String SPOJEVI =
+            " JOIN ordinacija ON pacijent.idOrdinacija = ordinacija.idOrdinacija";
+
     private int idPacijent;
     private String ime;
     private String prezime;
@@ -87,24 +93,22 @@ public class Pacijent implements ApstraktniDomenskiObjekat {
         return "pacijent";
     }
 
-    /**
-     * Ordinacija se ovde kreira samo sa identifikatorom, jer upit cita iskljucivo
-     * kolone tabele pacijent. Pun objekat ordinacije popunjava serverski kontroler.
-     */
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
         List<ApstraktniDomenskiObjekat> lista = new ArrayList<>();
         while (rs.next()) {
-            int idPacijent = rs.getInt("pacijent.idPacijent");
-            String ime = rs.getString("pacijent.ime");
-            String prezime = rs.getString("pacijent.prezime");
-            String brojTelefona = rs.getString("pacijent.brojTelefona");
-            String brojKnjizice = rs.getString("pacijent.brojKnjizice");
+            Ordinacija ordinacija = new Ordinacija(
+                    rs.getInt("ordinacija.idOrdinacija"),
+                    rs.getString("ordinacija.naziv"),
+                    rs.getString("ordinacija.adresa"));
 
-            Ordinacija ordinacija = new Ordinacija();
-            ordinacija.setIdOrdinacija(rs.getInt("pacijent.idOrdinacija"));
-
-            Pacijent p = new Pacijent(idPacijent, ime, prezime, brojTelefona, brojKnjizice, ordinacija);
+            Pacijent p = new Pacijent(
+                    rs.getInt("pacijent.idPacijent"),
+                    rs.getString("pacijent.ime"),
+                    rs.getString("pacijent.prezime"),
+                    rs.getString("pacijent.brojTelefona"),
+                    rs.getString("pacijent.brojKnjizice"),
+                    ordinacija);
             lista.add(p);
         }
         return lista;

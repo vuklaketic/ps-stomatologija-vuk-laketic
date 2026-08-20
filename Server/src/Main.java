@@ -1,7 +1,7 @@
 import baza.Konekcija;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import server.GlavniServer;
+import niti.GlavniServer;
 
 /**
  * Ulazna tacka serverske aplikacije.

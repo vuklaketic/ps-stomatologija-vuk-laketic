@@ -1,4 +1,4 @@
-package server;
+package niti;
 
 import controller.Kontroler;
 import java.io.IOException;
@@ -60,9 +60,9 @@ public class ObradaZahteva extends Thread {
     }
 
     /**
-     * Izvrsava operaciju iz zahteva. Ako operacija ne uspe, u odgovoru se vraca
-     * null (za pretrage) odnosno false (za izmene stanja), kako klijentski
-     * kontroler i ocekuje.
+     * Izvrsava operaciju iz zahteva. Ako operacija ne uspe, izuzetak se ne gubi
+     * vec se pakuje u odgovor, pa klijent prikazuje poruku koja je nastala na
+     * mestu greske.
      */
     private Odgovor obradiZahtev(Zahtev zahtev) {
         Operacija operacija = zahtev.getOperacija();
@@ -71,64 +71,50 @@ public class ObradaZahteva extends Thread {
         logger.log(Level.INFO, "Primljen zahtev: {0}", operacija);
 
         try {
-            Kontroler kontroler = Kontroler.getInstanca();
-
-            switch (operacija) {
-                case PRIJAVA_STOMATOLOG:
-                case LOGIN: {
-                    Object[] podaci = (Object[]) parametar;
-                    String korisnickoIme = (String) podaci[0];
-                    String sifra = (String) podaci[1];
-                    return new Odgovor(kontroler.prijaviStomatologa(korisnickoIme, sifra));
-                }
-                case VRATI_LISTU_TERMINA:
-                    return new Odgovor(kontroler.vratiListuTermina((String) parametar));
-
-                case VRATI_LISTU_STOMATOLOGA:
-                    return new Odgovor(kontroler.vratiListuStomatologa());
-
-                case VRATI_LISTU_PACIJENATA:
-                    return new Odgovor(kontroler.vratiListuPacijenata());
-
-                case VRATI_LISTU_USLUGA:
-                    return new Odgovor(kontroler.vratiListuUsluga());
-
-                case PRETRAZI_TERMIN:
-                    return new Odgovor(kontroler.pretraziTermin(((Number) parametar).intValue()));
-
-                case KREIRAJ_TERMIN:
-                case UBACI_TERMIN:
-                    return new Odgovor(kontroler.ubaciTermin((Termin) parametar));
-
-                case PROMENI_TERMIN:
-                    return new Odgovor(kontroler.promeniTermin((Termin) parametar));
-
-                case OBRISI_TERMIN:
-                    return new Odgovor(kontroler.obrisiTermin((Termin) parametar));
-
-                default:
-                    logger.log(Level.WARNING, "Nepoznata operacija: {0}", operacija);
-                    return new Odgovor(null);
-            }
+            return Odgovor.uspeh(izvrsi(operacija, parametar));
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "Greska prilikom izvrsavanja operacije " + operacija, ex);
-            return new Odgovor(neuspehZa(operacija));
+            logger.log(Level.WARNING, "Operacija " + operacija + " nije uspela: " + ex.getMessage());
+            return Odgovor.greska(ex);
         }
     }
 
-    /**
-     * Operacije koje menjaju stanje sistema klijentu vracaju logicku vrednost,
-     * a operacije pretrage null.
-     */
-    private Object neuspehZa(Operacija operacija) {
+    private Object izvrsi(Operacija operacija, Object parametar) throws Exception {
+        Kontroler kontroler = Kontroler.getInstanca();
+
         switch (operacija) {
+            case PRIJAVA_STOMATOLOG:
+            case LOGIN: {
+                Object[] podaci = (Object[]) parametar;
+                return kontroler.prijaviStomatologa((String) podaci[0], (String) podaci[1]);
+            }
+            case VRATI_LISTU_TERMINA:
+                return kontroler.vratiListuTermina((Termin) parametar);
+
+            case VRATI_LISTU_STOMATOLOGA:
+                return kontroler.vratiListuStomatologa();
+
+            case VRATI_LISTU_PACIJENATA:
+                return kontroler.vratiListuPacijenata();
+
+            case VRATI_LISTU_USLUGA:
+                return kontroler.vratiListuUsluga();
+
+            case PRETRAZI_TERMIN:
+                return kontroler.pretraziTermin((Termin) parametar);
+
             case KREIRAJ_TERMIN:
             case UBACI_TERMIN:
+                return kontroler.ubaciTermin((Termin) parametar);
+
             case PROMENI_TERMIN:
+                return kontroler.promeniTermin((Termin) parametar);
+
             case OBRISI_TERMIN:
-                return Boolean.FALSE;
-            default:
+                kontroler.obrisiTermin((Termin) parametar);
                 return null;
+
+            default:
+                throw new Exception("Server ne podrzava operaciju " + operacija + ".");
         }
     }
 

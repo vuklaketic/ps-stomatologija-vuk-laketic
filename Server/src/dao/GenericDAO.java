@@ -10,20 +10,20 @@ import java.util.logging.Logger;
 import model.ApstraktniDomenskiObjekat;
 
 /**
- * Genericki objekat za pristup bazi podataka.
+ * Genericki objekat za pristup bazi podataka (broker baze podataka).
  *
  * Klasa ne poznaje nijednu konkretnu domensku klasu - sve sto joj je potrebno
  * (naziv tabele, kolone, vrednosti, primarni kljuc, citanje result set-a)
  * dobija preko interfejsa {@link ApstraktniDomenskiObjekat}. Zahvaljujuci tome
- * je dovoljan jedan DAO za ceo sistem.
+ * je dovoljan jedan broker za ceo sistem.
  *
- * DAO radi iskljucivo nad jednom tabelom - ne spaja tabele. Objekte koji se
- * nalaze u vezama (npr. stomatolog i pacijent unutar termina) domenske klase
- * kreiraju samo sa identifikatorom, a pune ih serverski kontroler. Time se
- * izbegava nejednoznacnost naziva kolona i DAO ostaje zaista generican.
+ * Uslov koji se prosledjuje metodama za citanje dodaje se na upit u izvornom
+ * obliku, pa moze da sadrzi i spajanja i WHERE klauzu (npr.
+ * {@code Termin.SPOJEVI + " WHERE termin.idStomatolog = 3"}). Uslove sastavljaju
+ * sistemske operacije.
  *
- * Transakcijom upravlja pozivalac (serverski kontroler), jer se jedna sistemska
- * operacija cesto sastoji od vise poziva ovog DAO-a.
+ * Transakcijom upravlja {@code OpstaSistemskaOperacija}, jer se jedna sistemska
+ * operacija cesto sastoji od vise poziva ovog brokera.
  *
  * @author vukla
  */
@@ -44,7 +44,8 @@ public class GenericDAO {
                 + " VALUES (" + ado.vratiVrednostiZaUbacivanje() + ")";
         logger.log(Level.INFO, upit);
 
-        try (PreparedStatement ps = pripremiUpit(upit, true)) {
+        try (PreparedStatement ps = Konekcija.getInstanca().getKonekcija()
+                .prepareStatement(upit, Statement.RETURN_GENERATED_KEYS)) {
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -66,7 +67,7 @@ public class GenericDAO {
                 + " WHERE " + ado.vratiPrimarniKljuc();
         logger.log(Level.INFO, upit);
 
-        try (PreparedStatement ps = pripremiUpit(upit, false)) {
+        try (PreparedStatement ps = Konekcija.getInstanca().getKonekcija().prepareStatement(upit)) {
             return ps.executeUpdate();
         }
     }
@@ -91,7 +92,7 @@ public class GenericDAO {
         String upit = "DELETE FROM " + ado.vratiNazivTabele() + " WHERE " + uslov;
         logger.log(Level.INFO, upit);
 
-        try (PreparedStatement ps = pripremiUpit(upit, false)) {
+        try (PreparedStatement ps = Konekcija.getInstanca().getKonekcija().prepareStatement(upit)) {
             return ps.executeUpdate();
         }
     }
@@ -107,17 +108,12 @@ public class GenericDAO {
      * Vraca slogove koji zadovoljavaju zadati uslov.
      *
      * @param ado domenski objekat koji odredjuje tabelu i nacin citanja slogova
-     * @param uslov WHERE klauza bez kljucne reci WHERE, ili null za sve slogove
+     * @param uslov deo upita koji se dodaje posle naziva tabele - moze da sadrzi
+     *              spajanja i WHERE klauzu, ili null ako se citaju svi slogovi
      */
     public List<ApstraktniDomenskiObjekat> vratiPoUpitu(ApstraktniDomenskiObjekat ado, String uslov)
             throws Exception {
-        String upit = "SELECT * FROM " + ado.vratiNazivTabele();
-        if (uslov != null && !uslov.trim().isEmpty()) {
-            upit += " WHERE " + uslov;
-        }
-        logger.log(Level.INFO, upit);
-
-        try (PreparedStatement ps = pripremiUpit(upit, false);
+        try (PreparedStatement ps = pripremiUpit(ado, uslov);
                 ResultSet rs = ps.executeQuery()) {
             return ado.vratiListu(rs);
         }
@@ -128,23 +124,18 @@ public class GenericDAO {
      */
     public ApstraktniDomenskiObjekat vratiObjekat(ApstraktniDomenskiObjekat ado, String uslov)
             throws Exception {
-        String upit = "SELECT * FROM " + ado.vratiNazivTabele();
-        if (uslov != null && !uslov.trim().isEmpty()) {
-            upit += " WHERE " + uslov;
-        }
-        logger.log(Level.INFO, upit);
-
-        try (PreparedStatement ps = pripremiUpit(upit, false);
+        try (PreparedStatement ps = pripremiUpit(ado, uslov);
                 ResultSet rs = ps.executeQuery()) {
             return ado.vratiObjekatRS(rs);
         }
     }
 
-    private PreparedStatement pripremiUpit(String upit, boolean vratiGenerisaneKljuceve) throws Exception {
-        if (vratiGenerisaneKljuceve) {
-            return Konekcija.getInstanca().getKonekcija()
-                    .prepareStatement(upit, Statement.RETURN_GENERATED_KEYS);
+    private PreparedStatement pripremiUpit(ApstraktniDomenskiObjekat ado, String uslov) throws Exception {
+        String upit = "SELECT * FROM " + ado.vratiNazivTabele();
+        if (uslov != null) {
+            upit += uslov;
         }
+        logger.log(Level.INFO, upit);
         return Konekcija.getInstanca().getKonekcija().prepareStatement(upit);
     }
 }

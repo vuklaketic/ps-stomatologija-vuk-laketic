@@ -1,4 +1,4 @@
-package server;
+package niti;
 
 import java.io.IOException;
 import java.net.ServerSocket;

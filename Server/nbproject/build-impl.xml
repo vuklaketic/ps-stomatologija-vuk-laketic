@@ -1067,6 +1067,12 @@ is divided into following sections:
         <propertyfile file="${built-jar.properties}">
             <entry key="${basedir}" value=""/>
         </propertyfile>
+        <antcall target="-maybe-call-dep">
+            <param location="${project.Zajednicki}/build.xml" name="call.script"/>
+            <param name="call.target" value="jar"/>
+            <param location="${project.Zajednicki}" name="call.subproject"/>
+            <param location="${built-jar.properties}" name="call.built.properties"/>
+        </antcall>
     </target>
     <target depends="init,-check-automatic-build,-clean-after-automatic-build" name="-verify-automatic-build"/>
     <target depends="init" name="-check-automatic-build">
@@ -1738,6 +1744,12 @@ is divided into following sections:
         <propertyfile file="${built-clean.properties}">
             <entry key="${basedir}" value=""/>
         </propertyfile>
+        <antcall target="-maybe-call-dep">
+            <param location="${project.Zajednicki}/build.xml" name="call.script"/>
+            <param name="call.target" value="clean"/>
+            <param location="${project.Zajednicki}" name="call.subproject"/>
+            <param location="${built-clean.properties}" name="call.built.properties"/>
+        </antcall>
     </target>
     <target depends="init" name="-do-clean">
         <delete dir="${build.dir}"/>

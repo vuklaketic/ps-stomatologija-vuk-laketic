@@ -12,6 +12,8 @@
 
 # Package Files #
 *.jar
+# ...osim JDBC drajvera, da projekat radi odmah posle kloniranja
+!lib/*.jar
 *.war
 *.nar
 *.ear

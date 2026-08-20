@@ -6,6 +6,7 @@ package model;
 
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -56,9 +57,27 @@ public class StSpec implements ApstraktniDomenskiObjekat {
         return "stspec";
     }
 
+    /**
+     * Stomatolog i specijalizacija se kreiraju samo sa identifikatorom, jer upit
+     * cita iskljucivo kolone tabele stspec.
+     */
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = new ArrayList<>();
+        while (rs.next()) {
+            java.sql.Date sqlDatum = rs.getDate("stspec.datumSticanja");
+            LocalDate datumSticanja = sqlDatum == null ? null : sqlDatum.toLocalDate();
+
+            Stomatolog stomatolog = new Stomatolog();
+            stomatolog.setIdStomatolog(rs.getInt("stspec.idStomatolog"));
+
+            Specijalizacija specijalizacija = new Specijalizacija();
+            specijalizacija.setIdSpecijalizacija(rs.getInt("stspec.idSpecijalizacija"));
+
+            StSpec ss = new StSpec(datumSticanja, stomatolog, specijalizacija);
+            lista.add(ss);
+        }
+        return lista;
     }
 
     @Override
@@ -77,9 +96,14 @@ public class StSpec implements ApstraktniDomenskiObjekat {
                 + " AND idSpecijalizacija=" + specijalizacija.getIdSpecijalizacija();
     }
 
+    /**
+     * Vraca prvi objekat iz result set-a, odnosno null ako upit nije vratio
+     * nijedan slog. Koristi se za upite koji vracaju najvise jedan red.
+     */
     @Override
     public ApstraktniDomenskiObjekat vratiObjekatRS(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = vratiListu(rs);
+        return lista.isEmpty() ? null : lista.get(0);
     }
 
     @Override

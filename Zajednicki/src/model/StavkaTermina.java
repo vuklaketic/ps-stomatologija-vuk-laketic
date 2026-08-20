@@ -5,6 +5,7 @@
 package model;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -86,9 +87,29 @@ public class StavkaTermina implements ApstraktniDomenskiObjekat {
         return "stavkatermina";
     }
 
+    /**
+     * Termin i usluga se kreiraju samo sa identifikatorom, jer upit cita iskljucivo
+     * kolone tabele stavkatermina. Pune objekte popunjava serverski kontroler.
+     */
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = new ArrayList<>();
+        while (rs.next()) {
+            int rb = rs.getInt("stavkatermina.rb");
+            int kolicina = rs.getInt("stavkatermina.kolicina");
+            double iznos = rs.getDouble("stavkatermina.iznos");
+            double cenaUsluge = rs.getDouble("stavkatermina.cenaUsluge");
+
+            Termin termin = new Termin();
+            termin.setIdTermin(rs.getInt("stavkatermina.idTermin"));
+
+            Usluga usluga = new Usluga();
+            usluga.setIdUsluga(rs.getInt("stavkatermina.idUsluga"));
+
+            StavkaTermina st = new StavkaTermina(rb, kolicina, iznos, cenaUsluge, termin, usluga);
+            lista.add(st);
+        }
+        return lista;
     }
 
     @Override
@@ -106,9 +127,14 @@ public class StavkaTermina implements ApstraktniDomenskiObjekat {
         return "idTermin=" + termin.getIdTermin() + " AND rb=" + rb;
     }
 
+    /**
+     * Vraca prvi objekat iz result set-a, odnosno null ako upit nije vratio
+     * nijedan slog. Koristi se za upite koji vracaju najvise jedan red.
+     */
     @Override
     public ApstraktniDomenskiObjekat vratiObjekatRS(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = vratiListu(rs);
+        return lista.isEmpty() ? null : lista.get(0);
     }
 
     @Override

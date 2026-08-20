@@ -90,9 +90,14 @@ public class Ordinacija implements ApstraktniDomenskiObjekat {
         return "idOrdinacija=" + idOrdinacija;
     }
 
+    /**
+     * Vraca prvi objekat iz result set-a, odnosno null ako upit nije vratio
+     * nijedan slog. Koristi se za upite koji vracaju najvise jedan red.
+     */
     @Override
     public ApstraktniDomenskiObjekat vratiObjekatRS(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = vratiListu(rs);
+        return lista.isEmpty() ? null : lista.get(0);
     }
 
     @Override

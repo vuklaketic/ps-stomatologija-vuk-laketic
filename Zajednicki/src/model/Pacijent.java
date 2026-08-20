@@ -5,6 +5,7 @@
 package model;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -86,9 +87,27 @@ public class Pacijent implements ApstraktniDomenskiObjekat {
         return "pacijent";
     }
 
+    /**
+     * Ordinacija se ovde kreira samo sa identifikatorom, jer upit cita iskljucivo
+     * kolone tabele pacijent. Pun objekat ordinacije popunjava serverski kontroler.
+     */
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = new ArrayList<>();
+        while (rs.next()) {
+            int idPacijent = rs.getInt("pacijent.idPacijent");
+            String ime = rs.getString("pacijent.ime");
+            String prezime = rs.getString("pacijent.prezime");
+            String brojTelefona = rs.getString("pacijent.brojTelefona");
+            String brojKnjizice = rs.getString("pacijent.brojKnjizice");
+
+            Ordinacija ordinacija = new Ordinacija();
+            ordinacija.setIdOrdinacija(rs.getInt("pacijent.idOrdinacija"));
+
+            Pacijent p = new Pacijent(idPacijent, ime, prezime, brojTelefona, brojKnjizice, ordinacija);
+            lista.add(p);
+        }
+        return lista;
     }
 
     @Override
@@ -106,9 +125,14 @@ public class Pacijent implements ApstraktniDomenskiObjekat {
         return "idPacijent=" + idPacijent;
     }
 
+    /**
+     * Vraca prvi objekat iz result set-a, odnosno null ako upit nije vratio
+     * nijedan slog. Koristi se za upite koji vracaju najvise jedan red.
+     */
     @Override
     public ApstraktniDomenskiObjekat vratiObjekatRS(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = vratiListu(rs);
+        return lista.isEmpty() ? null : lista.get(0);
     }
 
     @Override

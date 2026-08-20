@@ -110,9 +110,38 @@ public class Termin implements ApstraktniDomenskiObjekat {
         return "termin";
     }
 
+    /**
+     * Stomatolog i pacijent se kreiraju samo sa identifikatorom, jer upit cita
+     * iskljucivo kolone tabele termin. Pune objekte, kao i listu stavki,
+     * popunjava serverski kontroler.
+     */
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = new ArrayList<>();
+        while (rs.next()) {
+            int idTermin = rs.getInt("termin.idTermin");
+
+            java.sql.Date sqlDatum = rs.getDate("termin.datum");
+            LocalDate datum = sqlDatum == null ? null : sqlDatum.toLocalDate();
+
+            java.sql.Time sqlVreme = rs.getTime("termin.vreme");
+            LocalTime vreme = sqlVreme == null ? null : sqlVreme.toLocalTime();
+
+            String nazivStatusa = rs.getString("termin.status");
+            StatusTermina status = nazivStatusa == null ? null : StatusTermina.valueOf(nazivStatusa);
+
+            String napomena = rs.getString("termin.napomena");
+
+            Stomatolog stomatolog = new Stomatolog();
+            stomatolog.setIdStomatolog(rs.getInt("termin.idStomatolog"));
+
+            Pacijent pacijent = new Pacijent();
+            pacijent.setIdPacijent(rs.getInt("termin.idPacijent"));
+
+            Termin t = new Termin(idTermin, datum, vreme, status, napomena, stomatolog, pacijent);
+            lista.add(t);
+        }
+        return lista;
     }
 
     @Override
@@ -131,9 +160,14 @@ public class Termin implements ApstraktniDomenskiObjekat {
         return "idTermin=" + idTermin;
     }
 
+    /**
+     * Vraca prvi objekat iz result set-a, odnosno null ako upit nije vratio
+     * nijedan slog. Koristi se za upite koji vracaju najvise jedan red.
+     */
     @Override
     public ApstraktniDomenskiObjekat vratiObjekatRS(ResultSet rs) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<ApstraktniDomenskiObjekat> lista = vratiListu(rs);
+        return lista.isEmpty() ? null : lista.get(0);
     }
 
     @Override

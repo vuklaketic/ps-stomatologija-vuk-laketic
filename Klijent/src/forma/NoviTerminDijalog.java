@@ -6,15 +6,18 @@ package forma;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -25,7 +28,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerDateModel;
 import kontroler.Kontroler;
 import model.Pacijent;
 import model.StatusTermina;
@@ -43,8 +48,15 @@ import model.Usluga;
  */
 public class NoviTerminDijalog extends JDialog {
 
-    private static final DateTimeFormatter FORMAT_DATUMA = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter FORMAT_VREMENA = DateTimeFormatter.ofPattern("HH:mm");
+
+    /** Radno vreme ordinacije i korak izmedju dva slobodna termina. */
+    private static final LocalTime POCETAK_RADNOG_VREMENA = LocalTime.of(8, 0);
+    private static final LocalTime KRAJ_RADNOG_VREMENA = LocalTime.of(20, 0);
+    private static final int KORAK_MINUTA = 15;
+
+    /** Gornja granica sirine polja da dijalog ne bi bio prosiren dugackim nazivima. */
+    private static final int MAKS_SIRINA_POLJA = 320;
 
     private final GlavnaForma roditeljskaForma;
     private final Termin terminZaIzmenu;
@@ -52,8 +64,8 @@ public class NoviTerminDijalog extends JDialog {
     private JComboBox<Pacijent> cmbPacijent;
     private JComboBox<Usluga> cmbUsluga;
     private JComboBox<StatusTermina> cmbStatus;
-    private JTextField txtDatum;
-    private JTextField txtVreme;
+    private JSpinner spnDatum;
+    private JComboBox<LocalTime> cmbVreme;
     private JTextField txtNapomena;
     private JButton btnPotvrdi;
     private JButton btnOdustani;
@@ -66,6 +78,13 @@ public class NoviTerminDijalog extends JDialog {
         inicijalizujKomponente();
         ucitajListe();
         popuniPodatke();
+
+        // dijalog se pakuje tek kada su sve liste popunjene, jer se tek tada
+        // zna stvarna sirina komponenti - u suprotnom bi labele bile odsecene
+        ogranicSirinu(cmbPacijent);
+        ogranicSirinu(cmbUsluga);
+        pack();
+        setLocationRelativeTo(roditeljskaForma);
     }
 
     private void inicijalizujKomponente() {
@@ -86,13 +105,13 @@ public class NoviTerminDijalog extends JDialog {
         cmbUsluga = new JComboBox<>();
         cmbUsluga.setRenderer(new RendererUsluge());
         cmbStatus = new JComboBox<>(StatusTermina.values());
-        txtDatum = new JTextField(15);
-        txtVreme = new JTextField(15);
+        spnDatum = napraviBiracDatuma();
+        cmbVreme = napraviBiracVremena();
         txtNapomena = new JTextField(15);
 
         dodajRed(panel, gbc, 0, "Pacijent:", cmbPacijent);
-        dodajRed(panel, gbc, 1, "Datum (yyyy-MM-dd):", txtDatum);
-        dodajRed(panel, gbc, 2, "Vreme (HH:mm):", txtVreme);
+        dodajRed(panel, gbc, 1, "Datum:", spnDatum);
+        dodajRed(panel, gbc, 2, "Vreme:", cmbVreme);
         dodajRed(panel, gbc, 3, "Usluga:", cmbUsluga);
         dodajRed(panel, gbc, 4, "Status:", cmbStatus);
         dodajRed(panel, gbc, 5, "Napomena:", txtNapomena);
@@ -109,21 +128,54 @@ public class NoviTerminDijalog extends JDialog {
         btnPotvrdi.addActionListener(e -> potvrdi());
         btnOdustani.addActionListener(e -> dispose());
         getRootPane().setDefaultButton(btnPotvrdi);
+    }
 
-        pack();
-        setLocationRelativeTo(roditeljskaForma);
+    /**
+     * Pravi spiner sa kalendarskim modelom u kome se datum bira strelicama,
+     * po danima, i prikazuje u formatu yyyy-MM-dd.
+     */
+    private JSpinner napraviBiracDatuma() {
+        SpinnerDateModel model = new SpinnerDateModel(danas(), null, null, Calendar.DAY_OF_MONTH);
+        JSpinner spiner = new JSpinner(model);
+        spiner.setEditor(new JSpinner.DateEditor(spiner, "yyyy-MM-dd"));
+        return spiner;
+    }
+
+    /**
+     * Pravi padajucu listu termina u okviru radnog vremena, u koracima od 15 minuta.
+     */
+    private JComboBox<LocalTime> napraviBiracVremena() {
+        JComboBox<LocalTime> combo = new JComboBox<>();
+        for (LocalTime slot = POCETAK_RADNOG_VREMENA; !slot.isAfter(KRAJ_RADNOG_VREMENA);
+                slot = slot.plusMinutes(KORAK_MINUTA)) {
+            combo.addItem(slot);
+        }
+        combo.setRenderer(new RendererVremena());
+        return combo;
     }
 
     private void dodajRed(JPanel panel, GridBagConstraints gbc, int red, String naziv, Component komponenta) {
         gbc.gridx = 0;
         gbc.gridy = red;
+        gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel(naziv), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = red;
+        gbc.weightx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(komponenta, gbc);
+    }
+
+    /**
+     * Ogranicava sirinu komponente da dugacki nazivi ne bi razvukli ceo dijalog.
+     */
+    private void ogranicSirinu(Component komponenta) {
+        Dimension zeljena = komponenta.getPreferredSize();
+        if (zeljena.width > MAKS_SIRINA_POLJA) {
+            komponenta.setPreferredSize(new Dimension(MAKS_SIRINA_POLJA, zeljena.height));
+        }
     }
 
     /**
@@ -155,15 +207,14 @@ public class NoviTerminDijalog extends JDialog {
     private void popuniPodatke() {
         if (!jeIzmena()) {
             cmbStatus.setSelectedItem(StatusTermina.ZAKAZAN);
+            izaberiVreme(POCETAK_RADNOG_VREMENA);
             return;
         }
 
         if (terminZaIzmenu.getDatum() != null) {
-            txtDatum.setText(terminZaIzmenu.getDatum().format(FORMAT_DATUMA));
+            spnDatum.setValue(uDatum(terminZaIzmenu.getDatum()));
         }
-        if (terminZaIzmenu.getVreme() != null) {
-            txtVreme.setText(terminZaIzmenu.getVreme().format(FORMAT_VREMENA));
-        }
+        izaberiVreme(terminZaIzmenu.getVreme());
         txtNapomena.setText(terminZaIzmenu.getNapomena());
         cmbStatus.setSelectedItem(terminZaIzmenu.getStatus());
 
@@ -173,6 +224,25 @@ public class NoviTerminDijalog extends JDialog {
         if (stavke != null && !stavke.isEmpty()) {
             izaberiUslugu(stavke.get(0).getUsluga());
         }
+    }
+
+    /**
+     * Bira zadato vreme u padajucoj listi. Ako postojeci termin nije zakazan
+     * na tacan slot od 15 minuta, njegovo vreme se dodaje u listu da ne bi
+     * bilo nehotice promenjeno prilikom izmene.
+     */
+    private void izaberiVreme(LocalTime vreme) {
+        if (vreme == null) {
+            return;
+        }
+        for (int i = 0; i < cmbVreme.getItemCount(); i++) {
+            if (cmbVreme.getItemAt(i).equals(vreme)) {
+                cmbVreme.setSelectedIndex(i);
+                return;
+            }
+        }
+        cmbVreme.addItem(vreme);
+        cmbVreme.setSelectedItem(vreme);
     }
 
     private void izaberiPacijenta(Pacijent pacijent) {
@@ -217,20 +287,11 @@ public class NoviTerminDijalog extends JDialog {
             return;
         }
 
-        LocalDate datum;
-        try {
-            datum = LocalDate.parse(txtDatum.getText().trim(), FORMAT_DATUMA);
-        } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Datum mora biti u formatu yyyy-MM-dd.",
-                    "Upozorenje", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        LocalDate datum = uLokalniDatum((Date) spnDatum.getValue());
 
-        LocalTime vreme;
-        try {
-            vreme = LocalTime.parse(txtVreme.getText().trim(), FORMAT_VREMENA);
-        } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Vreme mora biti u formatu HH:mm.",
+        LocalTime vreme = (LocalTime) cmbVreme.getSelectedItem();
+        if (vreme == null) {
+            JOptionPane.showMessageDialog(this, "Morate izabrati vreme termina.",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -277,6 +338,18 @@ public class NoviTerminDijalog extends JDialog {
         return terminZaIzmenu != null;
     }
 
+    private static Date danas() {
+        return uDatum(LocalDate.now());
+    }
+
+    private static Date uDatum(LocalDate datum) {
+        return Date.from(datum.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    private static LocalDate uLokalniDatum(Date datum) {
+        return datum.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
     /**
      * Domenske klase nemaju toString, pa se prikaz u combo box-u resava rendererom.
      */
@@ -303,6 +376,19 @@ public class NoviTerminDijalog extends JDialog {
             if (vrednost instanceof Usluga) {
                 Usluga u = (Usluga) vrednost;
                 setText(u.getNaziv() + " (" + u.getCena() + " din, " + u.getTrajanje() + " min)");
+            }
+            return this;
+        }
+    }
+
+    private static class RendererVremena extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> lista, Object vrednost, int indeks,
+                boolean izabran, boolean fokusiran) {
+            super.getListCellRendererComponent(lista, vrednost, indeks, izabran, fokusiran);
+            if (vrednost instanceof LocalTime) {
+                setText(((LocalTime) vrednost).format(FORMAT_VREMENA));
             }
             return this;
         }

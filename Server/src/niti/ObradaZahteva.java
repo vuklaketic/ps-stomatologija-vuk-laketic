@@ -25,18 +25,37 @@ public class ObradaZahteva extends Thread {
     private final Socket socket;
     private final Posiljalac posiljalac;
     private final Primalac primalac;
+    private final OsluskivacServera osluskivac;
 
     private volatile boolean kraj;
+
+    public ObradaZahteva(Socket socket) {
+        this(socket, null);
+    }
 
     /**
      * Redosled je bitan i mora da odgovara klijentu: prvo se pravi posiljalac
      * (ObjectOutputStream salje zaglavlje), pa tek onda primalac
      * (ObjectInputStream ceka zaglavlje sa druge strane).
+     *
+     * @param socket veza sa klijentom
+     * @param osluskivac osluskivac dogadjaja, moze biti null kada se server
+     * koristi bez korisnickog interfejsa
      */
-    public ObradaZahteva(Socket socket) {
+    public ObradaZahteva(Socket socket, OsluskivacServera osluskivac) {
         this.socket = socket;
+        this.osluskivac = osluskivac;
         this.posiljalac = new Posiljalac(socket);
         this.primalac = new Primalac(socket);
+    }
+
+    /**
+     * Prosledjuje poruku osluskivacu, ako je postavljen.
+     */
+    private void zabelezi(String poruka) {
+        if (osluskivac != null) {
+            osluskivac.zabelezi(poruka);
+        }
     }
 
     @Override
@@ -69,6 +88,7 @@ public class ObradaZahteva extends Thread {
         Object parametar = zahtev.getParametar();
 
         logger.log(Level.INFO, "Primljen zahtev: {0}", operacija);
+        zabelezi("Zahtev klijenta " + socket.getRemoteSocketAddress() + ": " + operacija);
 
         try {
             return Odgovor.uspeh(izvrsi(operacija, parametar));
@@ -129,8 +149,10 @@ public class ObradaZahteva extends Thread {
     private void zatvoriVezu() {
         try {
             if (!socket.isClosed()) {
+                Object adresa = socket.getRemoteSocketAddress();
                 socket.close();
                 logger.log(Level.INFO, "Prekinuta veza sa klijentom.");
+                zabelezi("Klijent diskonektovan: " + adresa);
             }
         } catch (IOException ex) {
             logger.log(Level.WARNING, "Greska prilikom zatvaranja veze sa klijentom", ex);

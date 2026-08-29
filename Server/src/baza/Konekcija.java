@@ -2,7 +2,10 @@ package baza;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -29,6 +32,10 @@ public class Konekcija {
     private static final Logger logger = Logger.getLogger(Konekcija.class.getName());
 
     private static final String FAJL_SA_PODESAVANJIMA = "baza.properties";
+
+    public static final String KLJUC_URL = "url";
+    public static final String KLJUC_KORISNIK = "korisnik";
+    public static final String KLJUC_SIFRA = "sifra";
 
     private static final String PODRAZUMEVANI_URL =
             "jdbc:mysql://localhost:3306/stomatologija?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Belgrade";
@@ -64,11 +71,11 @@ public class Konekcija {
     }
 
     private void otvoriKonekciju() throws SQLException {
-        Properties podesavanja = ucitajPodesavanja();
+        Properties podesavanja = vratiPodesavanja();
 
-        String url = podesavanja.getProperty("url", PODRAZUMEVANI_URL);
-        String korisnik = podesavanja.getProperty("korisnik", PODRAZUMEVANI_KORISNIK);
-        String sifra = podesavanja.getProperty("sifra", PODRAZUMEVANA_SIFRA);
+        String url = podesavanja.getProperty(KLJUC_URL);
+        String korisnik = podesavanja.getProperty(KLJUC_KORISNIK);
+        String sifra = podesavanja.getProperty(KLJUC_SIFRA);
 
         konekcija = DriverManager.getConnection(url, korisnik, sifra);
         konekcija.setAutoCommit(false);
@@ -91,6 +98,60 @@ public class Konekcija {
                     + ", koriste se podrazumevana podesavanja baze.", ex);
         }
         return podesavanja;
+    }
+
+    /**
+     * Vraca trenutno vazeca podesavanja konekcije, sa popunjenim podrazumevanim
+     * vrednostima za sve sto u fajlu nije zadato. Koristi je serverska forma da
+     * popuni polja u dijalogu za podesavanje baze.
+     *
+     * @return podesavanja sa kljucevima url, korisnik i sifra
+     */
+    public synchronized Properties vratiPodesavanja() {
+        Properties podesavanja = ucitajPodesavanja();
+
+        Properties vazeca = new Properties();
+        vazeca.setProperty(KLJUC_URL, podesavanja.getProperty(KLJUC_URL, PODRAZUMEVANI_URL));
+        vazeca.setProperty(KLJUC_KORISNIK, podesavanja.getProperty(KLJUC_KORISNIK, PODRAZUMEVANI_KORISNIK));
+        vazeca.setProperty(KLJUC_SIFRA, podesavanja.getProperty(KLJUC_SIFRA, PODRAZUMEVANA_SIFRA));
+        return vazeca;
+    }
+
+    /**
+     * Upisuje nova podesavanja u fajl {@code baza.properties}, u istom formatu
+     * u kome se i citaju. Sama konekcija se ovim ne menja - za to sluzi
+     * {@link #ponovoUspostaviKonekciju()}.
+     *
+     * @param url adresa baze
+     * @param korisnik korisnicko ime
+     * @param sifra sifra
+     * @throws IOException ako fajl ne moze da se upise
+     */
+    public synchronized void sacuvajPodesavanja(String url, String korisnik, String sifra) throws IOException {
+        Properties podesavanja = new Properties();
+        podesavanja.setProperty(KLJUC_URL, url);
+        podesavanja.setProperty(KLJUC_KORISNIK, korisnik);
+        podesavanja.setProperty(KLJUC_SIFRA, sifra);
+
+        File fajl = new File(FAJL_SA_PODESAVANJIMA);
+        try (OutputStream izlaz = new FileOutputStream(fajl)) {
+            podesavanja.store(izlaz, "Podesavanja konekcije sa bazom");
+        }
+
+        logger.log(Level.INFO, "Podesavanja baze su sacuvana u {0}", fajl.getAbsolutePath());
+    }
+
+    /**
+     * Zatvara postojecu konekciju i odmah otvara novu, sa podesavanjima koja se
+     * ponovo citaju iz fajla. Poziva se posle izmene podataka o bazi, da bi
+     * server odmah radio sa novim parametrima.
+     *
+     * @return nova konekcija ka bazi
+     * @throws SQLException ako baza nije dostupna ili su podaci pogresni
+     */
+    public synchronized Connection ponovoUspostaviKonekciju() throws SQLException {
+        zatvoriKonekciju();
+        return getKonekcija();
     }
 
     /**

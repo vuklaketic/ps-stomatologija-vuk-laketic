@@ -4,6 +4,7 @@ import baza.Konekcija;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.LocalTime;
@@ -58,24 +59,33 @@ public class ServerskaForma extends JFrame implements OsluskivacServera {
     private void inicijalizujKomponente() {
         setTitle("Server - Zakazivanje termina");
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        setSize(700, 420);
-        setLocationRelativeTo(null);
+        setResizable(true);
         setLayout(new BorderLayout());
 
         setJMenuBar(napraviMeni());
 
-        JPanel panelStanje = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelStanje.add(new JLabel("Status:"));
+        JPanel panelStanje = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        panelStanje.setBorder(BorderFactory.createEmptyBorder(5, 10, 0, 10));
+        JLabel lblNaslov = new JLabel("Status:");
+        lblNaslov.setFont(lblNaslov.getFont().deriveFont(Font.BOLD));
+        panelStanje.add(lblNaslov);
         lblStanje = new JLabel();
+        lblStanje.setFont(lblStanje.getFont().deriveFont(Font.BOLD));
         panelStanje.add(lblStanje);
         add(panelStanje, BorderLayout.NORTH);
 
         txtStatus = new JTextArea();
         txtStatus.setEditable(false);
-        txtStatus.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        add(new JScrollPane(txtStatus), BorderLayout.CENTER);
+        txtStatus.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        txtStatus.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JScrollPane klizac = new JScrollPane(txtStatus);
+        klizac.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(0, 20, 0, 20),
+                BorderFactory.createTitledBorder("Poruke servera")));
+        add(klizac, BorderLayout.CENTER);
 
-        JPanel panelDugmad = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel panelDugmad = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 15));
+        panelDugmad.setBorder(BorderFactory.createEmptyBorder(0, 20, 5, 10));
         btnPokreni = new JButton("Pokreni server");
         btnZaustavi = new JButton("Zaustavi server");
         panelDugmad.add(btnPokreni);
@@ -86,6 +96,12 @@ public class ServerskaForma extends JFrame implements OsluskivacServera {
         btnZaustavi.addActionListener(e -> zaustaviServer());
 
         prikaziStanje(false);
+
+        // prozor se otvara maksimizovan, a ova velicina vazi kada ga korisnik
+        // vrati iz maksimizovanog stanja
+        setSize(900, 550);
+        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // pri zatvaranju forme server se uredno gasi i konekcija se zatvara
         addWindowListener(new WindowAdapter() {

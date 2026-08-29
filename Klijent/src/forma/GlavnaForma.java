@@ -6,6 +6,7 @@ package forma;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.table.TableColumnModel;
 import kontroler.Kontroler;
 import model.Stomatolog;
 import model.Termin;
@@ -50,21 +52,27 @@ public class GlavnaForma extends JFrame {
         setTitle("Zakazivanje termina - dr " + ulogovaniStomatolog.getIme()
                 + " " + ulogovaniStomatolog.getPrezime());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        setSize(800, 450);
-        setLocationRelativeTo(null);
+        setResizable(true);
         setLayout(new BorderLayout());
 
         JLabel lblUlogovani = new JLabel("Ulogovani stomatolog: "
                 + ulogovaniStomatolog.getIme() + " " + ulogovaniStomatolog.getPrezime());
-        lblUlogovani.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        lblUlogovani.setFont(lblUlogovani.getFont().deriveFont(Font.BOLD));
+        lblUlogovani.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
         add(lblUlogovani, BorderLayout.NORTH);
 
         modelTabele = new ModelTabeleTermin(new ArrayList<Termin>());
         tabelaTermina = new JTable(modelTabele);
         tabelaTermina.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        add(new JScrollPane(tabelaTermina), BorderLayout.CENTER);
+        podesiTabelu();
 
-        JPanel panelDugmad = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JScrollPane klizac = new JScrollPane(tabelaTermina);
+        klizac.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+        add(klizac, BorderLayout.CENTER);
+
+        // razmak izmedju dugmadi i odvajanje od ivica prozora
+        JPanel panelDugmad = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 15));
+        panelDugmad.setBorder(BorderFactory.createEmptyBorder(0, 20, 5, 10));
         btnNovi = new JButton("Novi termin");
         btnIzmeni = new JButton("Izmeni termin");
         btnObrisi = new JButton("Obriši termin");
@@ -81,6 +89,12 @@ public class GlavnaForma extends JFrame {
         btnObrisi.addActionListener(e -> obrisiTermin());
         btnOsvezi.addActionListener(e -> ucitajTermine());
 
+        // prozor se otvara maksimizovan, a ova velicina vazi kada ga korisnik
+        // vrati iz maksimizovanog stanja
+        setSize(1000, 600);
+        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
         // pri zatvaranju forme zatvara se i veza sa serverom
         addWindowListener(new WindowAdapter() {
             @Override
@@ -88,6 +102,26 @@ public class GlavnaForma extends JFrame {
                 zatvoriAplikaciju();
             }
         });
+    }
+
+    /**
+     * Podesava izgled tabele: visinu redova, raspodelu sirina kolona i
+     * podebljano zaglavlje. Kolone se rasporedjuju po celoj sirini prozora, a
+     * zadate sirine odredjuju odnos izmedju njih.
+     */
+    private void podesiTabelu() {
+        tabelaTermina.setRowHeight(26);
+        tabelaTermina.setFillsViewportHeight(true);
+        tabelaTermina.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        tabelaTermina.getTableHeader().setFont(
+                tabelaTermina.getTableHeader().getFont().deriveFont(Font.BOLD));
+        tabelaTermina.getTableHeader().setReorderingAllowed(false);
+
+        int[] sirine = {60, 120, 90, 260, 140, 400};
+        TableColumnModel kolone = tabelaTermina.getColumnModel();
+        for (int i = 0; i < kolone.getColumnCount() && i < sirine.length; i++) {
+            kolone.getColumn(i).setPreferredWidth(sirine[i]);
+        }
     }
 
     /**

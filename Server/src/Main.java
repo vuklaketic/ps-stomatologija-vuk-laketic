@@ -1,3 +1,4 @@
+import forma.Izgled;
 import forma.ServerskaForma;
 import javax.swing.SwingUtilities;
 
@@ -12,6 +13,9 @@ import javax.swing.SwingUtilities;
 public class Main {
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ServerskaForma().setVisible(true));
+        SwingUtilities.invokeLater(() -> {
+            Izgled.primeni();
+            new ServerskaForma().setVisible(true);
+        });
     }
 }

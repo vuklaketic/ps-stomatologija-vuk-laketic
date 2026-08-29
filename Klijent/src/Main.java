@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
 
+import forma.Izgled;
 import forma.LoginForma;
 import javax.swing.SwingUtilities;
 
@@ -17,6 +18,7 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                Izgled.primeni();
                 new LoginForma().setVisible(true);
             }
         });

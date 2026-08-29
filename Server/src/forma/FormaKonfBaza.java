@@ -55,10 +55,10 @@ public class FormaKonfBaza extends JDialog {
         setLayout(new BorderLayout());
 
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 15, 20));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 8, 8, 8);
         gbc.anchor = GridBagConstraints.WEST;
 
         txtUrl = new JTextField(35);
@@ -71,7 +71,8 @@ public class FormaKonfBaza extends JDialog {
 
         add(panel, BorderLayout.CENTER);
 
-        JPanel panelDugmad = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel panelDugmad = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        panelDugmad.setBorder(BorderFactory.createEmptyBorder(0, 20, 10, 10));
         btnSacuvaj = new JButton("Sačuvaj");
         btnOtkazi = new JButton("Otkaži");
         panelDugmad.add(btnSacuvaj);

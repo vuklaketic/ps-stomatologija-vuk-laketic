@@ -65,4 +65,9 @@ public class PromeniPacijentSO extends OpstaSistemskaOperacija {
 
         izmenjeni = pacijent;
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da zapamti pacijenta.";
+    }
 }

@@ -32,4 +32,9 @@ public class VratiListuUslugaSO extends OpstaSistemskaOperacija {
             lista.add((Usluga) ado);
         }
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da ucita listu usluga.";
+    }
 }

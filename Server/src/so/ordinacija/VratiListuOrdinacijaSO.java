@@ -31,4 +31,9 @@ public class VratiListuOrdinacijaSO extends OpstaSistemskaOperacija {
             lista.add((Ordinacija) ado);
         }
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da ucita listu ordinacija.";
+    }
 }

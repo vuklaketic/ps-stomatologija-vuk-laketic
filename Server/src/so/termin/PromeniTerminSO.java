@@ -86,4 +86,9 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
 
         izmenjeni = termin;
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da zapamti termin.";
+    }
 }

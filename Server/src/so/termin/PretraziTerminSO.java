@@ -53,4 +53,9 @@ public class PretraziTerminSO extends OpstaSistemskaOperacija {
         }
         pronadjeni.setStavke(stavke);
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da nadje termin.";
+    }
 }

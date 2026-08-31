@@ -74,4 +74,9 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
 
         zakazani = termin;
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da zapamti termin.";
+    }
 }

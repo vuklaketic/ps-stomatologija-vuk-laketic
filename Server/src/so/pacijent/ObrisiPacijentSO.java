@@ -52,4 +52,9 @@ public class ObrisiPacijentSO extends OpstaSistemskaOperacija {
             throw new Exception(PORUKA_IMA_TERMINE);
         }
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da obrise pacijenta.";
+    }
 }

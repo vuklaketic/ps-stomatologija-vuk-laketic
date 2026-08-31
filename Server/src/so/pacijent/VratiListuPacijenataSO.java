@@ -72,4 +72,9 @@ public class VratiListuPacijenataSO extends OpstaSistemskaOperacija {
         }
         return " WHERE " + String.join(" AND ", uslovi);
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da nadje pacijente po zadatim kriterijumima.";
+    }
 }

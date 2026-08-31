@@ -35,4 +35,9 @@ public class ObrisiTerminSO extends OpstaSistemskaOperacija {
         broker.obrisiPoUpitu(new StavkaTermina(), "idTermin = " + termin.getIdTermin());
         broker.obrisi(termin);
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da obrise termin.";
+    }
 }

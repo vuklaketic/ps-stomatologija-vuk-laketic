@@ -61,4 +61,9 @@ public class UbaciPacijentSO extends OpstaSistemskaOperacija {
 
         zapamceni = pacijent;
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da zapamti pacijenta.";
+    }
 }

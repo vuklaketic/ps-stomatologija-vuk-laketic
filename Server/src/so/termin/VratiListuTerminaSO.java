@@ -101,4 +101,9 @@ public class VratiListuTerminaSO extends OpstaSistemskaOperacija {
         }
         termin.setStavke(stavke);
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da nadje termine po zadatim kriterijumima.";
+    }
 }

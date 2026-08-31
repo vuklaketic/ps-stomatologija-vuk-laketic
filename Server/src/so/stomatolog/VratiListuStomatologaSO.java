@@ -32,4 +32,9 @@ public class VratiListuStomatologaSO extends OpstaSistemskaOperacija {
             lista.add((Stomatolog) ado);
         }
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da ucita listu stomatologa.";
+    }
 }

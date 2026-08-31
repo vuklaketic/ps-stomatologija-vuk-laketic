@@ -213,9 +213,10 @@ public class NoviPacijentDijalog extends JDialog {
                 Kontroler.getInstanca().ubaciPacijenta(pacijent);
             }
         } catch (Exception ex) {
-            // dijalog ostaje otvoren da korisnik moze da ispravi podatke
-            JOptionPane.showMessageDialog(this,
-                    "Sistem ne može da zapamti pacijenta.\n" + ex.getMessage(),
+            // dijalog ostaje otvoren da korisnik moze da ispravi podatke;
+            // poruka stize sa mesta na kome je greska nastala, pa se prikazuje
+            // onakva kakva jeste i ne dodaje joj se jos jedna recenica
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
             return;
         }

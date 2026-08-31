@@ -46,4 +46,9 @@ public class PrijavaStomatologaSO extends OpstaSistemskaOperacija {
             throw new Exception("Pogresno korisnicko ime ili sifra.");
         }
     }
+
+    @Override
+    protected String porukaONeuspehu() {
+        return "Sistem ne moze da proveri podatke za prijavu.";
+    }
 }

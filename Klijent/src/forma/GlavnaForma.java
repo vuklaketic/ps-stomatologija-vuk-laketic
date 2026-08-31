@@ -6,8 +6,13 @@ package forma;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.LocalDate;
@@ -39,6 +44,9 @@ public class GlavnaForma extends JFrame {
 
     /** Stavka koja u padajucim listama pretrage znaci "bez filtera". */
     private static final String SVI = "Svi";
+
+    /** Do ove sirine polja pretrage mogu da se skupe u uskom prozoru. */
+    private static final int NAJMANJA_SIRINA_POLJA = 45;
 
     private final Stomatolog ulogovaniStomatolog;
 
@@ -94,9 +102,10 @@ public class GlavnaForma extends JFrame {
         panelZaglavlje.add(btnOdjava, BorderLayout.EAST);
 
         // u gornjem delu forme stoje zaglavlje i, ispod njega, panel za pretragu
+        JPanel panelPretrage = napraviPanelPretrage();
         JPanel panelGore = new JPanel(new BorderLayout());
         panelGore.add(panelZaglavlje, BorderLayout.NORTH);
-        panelGore.add(napraviPanelPretrage(), BorderLayout.CENTER);
+        panelGore.add(panelPretrage, BorderLayout.CENTER);
         add(panelGore, BorderLayout.NORTH);
 
         modelTabele = new ModelTabeleTermin(new ArrayList<Termin>());
@@ -128,9 +137,15 @@ public class GlavnaForma extends JFrame {
         btnOsvezi.addActionListener(e -> ucitajTermine());
         btnOdjava.addActionListener(e -> odjaviSe());
 
+        // najmanja sirina prozora se izvodi iz stvarne sirine panela za
+        // pretragu, pa red sa kriterijumima uvek stane ceo, bez obzira na to
+        // koliko je siroka slova tema iscrtala
+        int najmanjaSirina = Math.max(900, panelPretrage.getPreferredSize().width + 40);
+        setMinimumSize(new Dimension(najmanjaSirina, 550));
+
         // prozor se otvara maksimizovan, a ova velicina vazi kada ga korisnik
         // vrati iz maksimizovanog stanja
-        setSize(1000, 600);
+        setSize(Math.max(1000, najmanjaSirina), 600);
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
@@ -145,41 +160,90 @@ public class GlavnaForma extends JFrame {
 
     /**
      * Pravi panel u kome stomatolog bira kriterijume pretrage termina.
+     *
+     * Panel koristi GridBagLayout i sve drzi u jednom redu. FlowLayout ovde ne
+     * moze da se koristi: kada prozor nije dovoljno sirok, on prelama
+     * komponente u novi red, ali za visinu i dalje prijavljuje jedan red, pa
+     * prelomljena dugmad ispadnu iz panela i naljegnu na tabelu ispod.
      */
     private JPanel napraviPanelPretrage() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(0, 20, 10, 20),
                 BorderFactory.createTitledBorder("Pretraga termina")));
 
-        panel.add(new JLabel("Datum:"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridy = 0;
+        gbc.insets = new Insets(8, 5, 8, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+
         // prazan datum je dozvoljen i znaci da se po datumu ne filtrira
         biracTrazenogDatuma = BiracDatuma.napravi(true);
-        panel.add(biracTrazenogDatuma);
 
-        panel.add(new JLabel("Status:"));
         cmbTrazeniStatus = new JComboBox<>();
         cmbTrazeniStatus.addItem(SVI);
         for (StatusTermina status : StatusTermina.values()) {
             cmbTrazeniStatus.addItem(status);
         }
-        panel.add(cmbTrazeniStatus);
 
-        panel.add(new JLabel("Pacijent:"));
         cmbTrazeniPacijent = new JComboBox<>();
         cmbTrazeniPacijent.addItem(SVI);
         cmbTrazeniPacijent.setRenderer(new RendererPacijenta());
-        panel.add(cmbTrazeniPacijent);
+
+        // polja imaju malu najmanju sirinu, pa se u uskom prozoru skupljaju
+        // umesto da guraju dugmad van vidljivog dela panela; duga imena
+        // pacijenata se u padajucoj listi i dalje vide u punoj duzini
+        ogranicSirinu(biracTrazenogDatuma, 150);
+        ogranicSirinu(cmbTrazeniStatus, 130);
+        ogranicSirinu(cmbTrazeniPacijent, 200);
+
+        int kolona = 0;
+        kolona = dodajURed(panel, gbc, kolona, new JLabel("Datum:"));
+        kolona = dodajURed(panel, gbc, kolona, biracTrazenogDatuma);
+        kolona = dodajURed(panel, gbc, kolona, new JLabel("Status:"));
+        kolona = dodajURed(panel, gbc, kolona, cmbTrazeniStatus);
+        kolona = dodajURed(panel, gbc, kolona, new JLabel("Pacijent:"));
+        kolona = dodajURed(panel, gbc, kolona, cmbTrazeniPacijent);
 
         btnPretrazi = new JButton("Pretraži");
         btnResetuj = new JButton("Resetuj filtere");
-        panel.add(btnPretrazi);
-        panel.add(btnResetuj);
+        gbc.insets = new Insets(8, 10, 8, 0);
+        kolona = dodajURed(panel, gbc, kolona, btnPretrazi);
+        gbc.insets = new Insets(8, 5, 8, 5);
+        kolona = dodajURed(panel, gbc, kolona, btnResetuj);
+
+        // prazna celija na kraju preuzima visak sirine, pa kriterijumi ostaju
+        // sabijeni uz levu ivicu umesto da se razvlace po celom prozoru
+        gbc.gridx = kolona;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(new JPanel(), gbc);
 
         btnPretrazi.addActionListener(e -> pretrazi());
         btnResetuj.addActionListener(e -> resetujFiltere());
 
         return panel;
+    }
+
+    /**
+     * Zadaje komponenti pozeljnu sirinu i znatno manju najmanju sirinu, da bi
+     * layout imao odakle da uzme prostor kada je prozor uzak.
+     */
+    private void ogranicSirinu(Component komponenta, int pozeljnaSirina) {
+        int visina = komponenta.getPreferredSize().height;
+        komponenta.setPreferredSize(new Dimension(pozeljnaSirina, visina));
+        komponenta.setMinimumSize(new Dimension(NAJMANJA_SIRINA_POLJA, visina));
+    }
+
+    /**
+     * Dodaje komponentu u tekucu kolonu reda i vraca broj naredne kolone.
+     */
+    private int dodajURed(JPanel panel, GridBagConstraints gbc, int kolona, Component komponenta) {
+        gbc.gridx = kolona;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(komponenta, gbc);
+        return kolona + 1;
     }
 
     /**

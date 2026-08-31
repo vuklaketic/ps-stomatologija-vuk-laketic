@@ -199,7 +199,10 @@ public class NoviTerminDijalog extends JDialog {
      */
     private void popuniPodatke() {
         if (!jeIzmena()) {
+            // status novog termina nije stvar izbora - svaki novi termin je
+            // zakazan, pa polje stoji prikazano ali onemoguceno
             cmbStatus.setSelectedItem(StatusTermina.ZAKAZAN);
+            cmbStatus.setEnabled(false);
             txtDatum.setText(LocalDate.now().format(FORMAT_DATUMA));
             izaberiVreme(POCETAK_RADNOG_VREMENA);
             return;
@@ -293,7 +296,11 @@ public class NoviTerminDijalog extends JDialog {
             return;
         }
 
-        StatusTermina status = (StatusTermina) cmbStatus.getSelectedItem();
+        // pri kreiranju je status uvek ZAKAZAN, bez obzira na stanje polja;
+        // pri izmeni ga korisnik bira (npr. OTKAZAN ili ODRZAN)
+        StatusTermina status = jeIzmena()
+                ? (StatusTermina) cmbStatus.getSelectedItem()
+                : StatusTermina.ZAKAZAN;
         String napomena = txtNapomena.getText().trim();
 
         // u rezimu izmene zadrzava se postojeci id termina

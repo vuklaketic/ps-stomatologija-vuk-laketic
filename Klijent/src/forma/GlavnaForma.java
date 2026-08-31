@@ -9,19 +9,27 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumnModel;
 import kontroler.Kontroler;
+import model.Pacijent;
+import model.StatusTermina;
 import model.Stomatolog;
 import model.Termin;
 
@@ -32,10 +40,31 @@ import model.Termin;
  */
 public class GlavnaForma extends JFrame {
 
+    private static final DateTimeFormatter FORMAT_DATUMA =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
+
+    /** Stavka koja u padajucim listama pretrage znaci "bez filtera". */
+    private static final String SVI = "Svi";
+
     private final Stomatolog ulogovaniStomatolog;
 
     private JTable tabelaTermina;
     private ModelTabeleTermin modelTabele;
+
+    private JTextField txtTrazeniDatum;
+    private JComboBox<Object> cmbTrazeniStatus;
+    private JComboBox<Object> cmbTrazeniPacijent;
+    private JButton btnPretrazi;
+    private JButton btnResetuj;
+
+    /**
+     * Kriterijumi po kojima je poslednja pretraga izvrsena. Cuvaju se odvojeno
+     * od polja forme, da osvezavanje liste posle unosa ili brisanja termina ne
+     * bi ponovo proveravalo ono sto korisnik u medjuvremenu kuca u poljima.
+     */
+    private LocalDate kriterijumDatum;
+    private StatusTermina kriterijumStatus;
+    private Pacijent kriterijumPacijent;
 
     private JButton btnNovi;
     private JButton btnIzmeni;
@@ -46,6 +75,7 @@ public class GlavnaForma extends JFrame {
     public GlavnaForma() {
         this.ulogovaniStomatolog = Kontroler.getInstanca().getUlogovaniStomatolog();
         inicijalizujKomponente();
+        ucitajPacijente();
         ucitajTermine();
     }
 
@@ -69,7 +99,11 @@ public class GlavnaForma extends JFrame {
         btnOdjava = new JButton("Odjavi se");
         panelZaglavlje.add(btnOdjava, BorderLayout.EAST);
 
-        add(panelZaglavlje, BorderLayout.NORTH);
+        // u gornjem delu forme stoje zaglavlje i, ispod njega, panel za pretragu
+        JPanel panelGore = new JPanel(new BorderLayout());
+        panelGore.add(panelZaglavlje, BorderLayout.NORTH);
+        panelGore.add(napraviPanelPretrage(), BorderLayout.CENTER);
+        add(panelGore, BorderLayout.NORTH);
 
         modelTabele = new ModelTabeleTermin(new ArrayList<Termin>());
         tabelaTermina = new JTable(modelTabele);
@@ -116,6 +150,105 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
+     * Pravi panel u kome stomatolog bira kriterijume pretrage termina.
+     */
+    private JPanel napraviPanelPretrage() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(0, 20, 10, 20),
+                BorderFactory.createTitledBorder("Pretraga termina")));
+
+        panel.add(new JLabel("Datum (yyyy-MM-dd):"));
+        txtTrazeniDatum = new JTextField(10);
+        panel.add(txtTrazeniDatum);
+
+        panel.add(new JLabel("Status:"));
+        cmbTrazeniStatus = new JComboBox<>();
+        cmbTrazeniStatus.addItem(SVI);
+        for (StatusTermina status : StatusTermina.values()) {
+            cmbTrazeniStatus.addItem(status);
+        }
+        panel.add(cmbTrazeniStatus);
+
+        panel.add(new JLabel("Pacijent:"));
+        cmbTrazeniPacijent = new JComboBox<>();
+        cmbTrazeniPacijent.addItem(SVI);
+        cmbTrazeniPacijent.setRenderer(new RendererPacijenta());
+        panel.add(cmbTrazeniPacijent);
+
+        btnPretrazi = new JButton("Pretraži");
+        btnResetuj = new JButton("Resetuj filtere");
+        panel.add(btnPretrazi);
+        panel.add(btnResetuj);
+
+        btnPretrazi.addActionListener(e -> pretrazi());
+        btnResetuj.addActionListener(e -> resetujFiltere());
+
+        return panel;
+    }
+
+    /**
+     * Puni padajucu listu pacijenata za pretragu.
+     */
+    private void ucitajPacijente() {
+        try {
+            for (Pacijent pacijent : Kontroler.getInstanca().vratiListuPacijenata()) {
+                cmbTrazeniPacijent.addItem(pacijent);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Greška", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Cita kriterijume iz polja i prikazuje termine koji im odgovaraju.
+     */
+    private void pretrazi() {
+        String unetDatum = txtTrazeniDatum.getText().trim();
+        LocalDate datum = null;
+        if (!unetDatum.isEmpty()) {
+            try {
+                datum = LocalDate.parse(unetDatum, FORMAT_DATUMA);
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Datum \"" + unetDatum + "\" nije ispravan.\n"
+                        + "Datum se unosi u formatu yyyy-MM-dd, na primer "
+                        + LocalDate.now().format(FORMAT_DATUMA) + ".\n"
+                        + "Ostavite polje prazno ako ne želite da filtrirate po datumu.",
+                        "Neispravan datum", JOptionPane.WARNING_MESSAGE);
+                txtTrazeniDatum.requestFocusInWindow();
+                txtTrazeniDatum.selectAll();
+                return;
+            }
+        }
+
+        Object izabranStatus = cmbTrazeniStatus.getSelectedItem();
+        Object izabranPacijent = cmbTrazeniPacijent.getSelectedItem();
+
+        kriterijumDatum = datum;
+        kriterijumStatus = izabranStatus instanceof StatusTermina ? (StatusTermina) izabranStatus : null;
+        kriterijumPacijent = izabranPacijent instanceof Pacijent ? (Pacijent) izabranPacijent : null;
+
+        ucitajTermine();
+    }
+
+    /**
+     * Prazni polja pretrage i vraca prikaz svih termina ulogovanog stomatologa.
+     */
+    private void resetujFiltere() {
+        txtTrazeniDatum.setText("");
+        cmbTrazeniStatus.setSelectedItem(SVI);
+        cmbTrazeniPacijent.setSelectedItem(SVI);
+
+        kriterijumDatum = null;
+        kriterijumStatus = null;
+        kriterijumPacijent = null;
+
+        ucitajTermine();
+    }
+
+    /**
      * Podesava izgled tabele: visinu redova, raspodelu sirina kolona i
      * podebljano zaglavlje. Kolone se rasporedjuju po celoj sirini prozora, a
      * zadate sirine odredjuju odnos izmedju njih.
@@ -136,11 +269,14 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
-     * Ucitava termine ulogovanog stomatologa i prikazuje ih u tabeli.
+     * Ucitava termine ulogovanog stomatologa koji odgovaraju poslednje zadatim
+     * kriterijumima pretrage i prikazuje ih u tabeli. Ako kriterijumi nisu
+     * zadati, prikazuju se svi njegovi termini.
      */
     public final void ucitajTermine() {
         try {
-            List<Termin> termini = Kontroler.getInstanca().vratiTermineUlogovanog();
+            List<Termin> termini = Kontroler.getInstanca().pretraziTermineUlogovanog(
+                    kriterijumDatum, kriterijumStatus, kriterijumPacijent);
             modelTabele.postaviListu(termini);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),

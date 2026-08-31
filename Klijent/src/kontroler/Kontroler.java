@@ -5,12 +5,14 @@
 package kontroler;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import komunikacija.Komunikacija;
 import komunikacija.Odgovor;
 import komunikacija.Operacija;
 import komunikacija.TipOdgovora;
 import model.Pacijent;
+import model.StatusTermina;
 import model.Stomatolog;
 import model.Termin;
 import model.Usluga;
@@ -84,14 +86,34 @@ public class Kontroler {
     }
 
     /**
-     * Vraca termine ulogovanog stomatologa.
+     * Vraca sve termine ulogovanog stomatologa.
      */
     public List<Termin> vratiTermineUlogovanog() throws Exception {
+        return pretraziTermineUlogovanog(null, null, null);
+    }
+
+    /**
+     * Vraca termine ulogovanog stomatologa koji odgovaraju zadatim kriterijumima.
+     *
+     * Kriterijumi se serveru salju kao popunjena polja domenskog objekta, a ne
+     * kao delovi SQL upita. Svaki argument koji je null znaci da se po tom
+     * podatku ne filtrira.
+     *
+     * @param datum dan za koji se traze termini, ili null za sve dane
+     * @param status trazeni status termina, ili null za sve statuse
+     * @param pacijent pacijent cji se termini traze, ili null za sve pacijente
+     */
+    public List<Termin> pretraziTermineUlogovanog(LocalDate datum, StatusTermina status,
+            Pacijent pacijent) throws Exception {
         if (ulogovaniStomatolog == null) {
             throw new Exception("Nijedan stomatolog nije prijavljen na sistem.");
         }
+
         Termin kriterijum = new Termin();
         kriterijum.setStomatolog(ulogovaniStomatolog);
+        kriterijum.setDatum(datum);
+        kriterijum.setStatus(status);
+        kriterijum.setPacijent(pacijent);
         return vratiListuTermina(kriterijum);
     }
 

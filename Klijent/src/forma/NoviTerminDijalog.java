@@ -399,22 +399,10 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Domenske klase nemaju toString, pa se prikaz u combo box-u resava rendererom.
+     * Domenske klase nemaju toString, pa se prikaz u combo box-u resava
+     * rendererom. Renderer pacijenta je izdvojen u zasebnu klasu, jer ga
+     * koristi i pretraga na glavnoj formi.
      */
-    private static class RendererPacijenta extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(JList<?> lista, Object vrednost, int indeks,
-                boolean izabran, boolean fokusiran) {
-            super.getListCellRendererComponent(lista, vrednost, indeks, izabran, fokusiran);
-            if (vrednost instanceof Pacijent) {
-                Pacijent p = (Pacijent) vrednost;
-                setText(p.getIme() + " " + p.getPrezime() + " (" + p.getBrojKnjizice() + ")");
-            }
-            return this;
-        }
-    }
-
     private static class RendererUsluge extends DefaultListCellRenderer {
 
         @Override

@@ -72,6 +72,7 @@ public class GlavnaForma extends JFrame {
     private JButton btnIzmeni;
     private JButton btnObrisi;
     private JButton btnOsvezi;
+    private JButton btnPacijenti;
     private JButton btnOdjava;
 
     public GlavnaForma() {
@@ -98,8 +99,13 @@ public class GlavnaForma extends JFrame {
         lblUlogovani.setFont(lblUlogovani.getFont().deriveFont(Font.BOLD));
         panelZaglavlje.add(lblUlogovani, BorderLayout.WEST);
 
+        // desno u zaglavlju stoje prelazak na pacijente i odjava
+        JPanel panelZaglavljeDesno = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        btnPacijenti = new JButton("Pacijenti");
         btnOdjava = new JButton("Odjavi se");
-        panelZaglavlje.add(btnOdjava, BorderLayout.EAST);
+        panelZaglavljeDesno.add(btnPacijenti);
+        panelZaglavljeDesno.add(btnOdjava);
+        panelZaglavlje.add(panelZaglavljeDesno, BorderLayout.EAST);
 
         // u gornjem delu forme stoje zaglavlje i, ispod njega, panel za pretragu
         JPanel panelPretrage = napraviPanelPretrage();
@@ -135,6 +141,7 @@ public class GlavnaForma extends JFrame {
         btnIzmeni.addActionListener(e -> izmeniTermin());
         btnObrisi.addActionListener(e -> obrisiTermin());
         btnOsvezi.addActionListener(e -> ucitajTermine(true));
+        btnPacijenti.addActionListener(e -> otvoriPacijente());
         btnOdjava.addActionListener(e -> odjaviSe());
 
         // najmanja sirina prozora se izvodi iz stvarne sirine panela za
@@ -400,6 +407,13 @@ public class GlavnaForma extends JFrame {
             return null;
         }
         return modelTabele.vratiTermin(tabelaTermina.convertRowIndexToModel(red));
+    }
+
+    /**
+     * Otvara formu za rad sa pacijentima kao zaseban prozor.
+     */
+    private void otvoriPacijente() {
+        new UpravljanjePacijentimaForma(this).setVisible(true);
     }
 
     /**

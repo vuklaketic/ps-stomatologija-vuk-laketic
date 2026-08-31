@@ -11,6 +11,7 @@ import komunikacija.Komunikacija;
 import komunikacija.Odgovor;
 import komunikacija.Operacija;
 import komunikacija.TipOdgovora;
+import model.Ordinacija;
 import model.Pacijent;
 import model.StatusTermina;
 import model.Stomatolog;
@@ -120,6 +121,43 @@ public class Kontroler {
     @SuppressWarnings("unchecked")
     public List<Pacijent> vratiListuPacijenata() throws Exception {
         return (List<Pacijent>) posalji(Operacija.VRATI_LISTU_PACIJENATA, null);
+    }
+
+    /**
+     * Vraca pacijente koji odgovaraju zadatim kriterijumima.
+     *
+     * Kriterijumi se serveru salju kao popunjena polja domenskog objekta.
+     * Prazno ime ili prezime, odnosno nepostavljena ordinacija, znace da se po
+     * tom podatku ne filtrira.
+     */
+    public List<Pacijent> pretraziPacijente(String ime, String prezime, Ordinacija ordinacija) throws Exception {
+        Pacijent kriterijum = new Pacijent();
+        kriterijum.setIme(ime);
+        kriterijum.setPrezime(prezime);
+        kriterijum.setOrdinacija(ordinacija);
+        return vratiListuPacijenata(kriterijum);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Pacijent> vratiListuPacijenata(Pacijent kriterijum) throws Exception {
+        return (List<Pacijent>) posalji(Operacija.VRATI_LISTU_PACIJENATA, kriterijum);
+    }
+
+    public void ubaciPacijenta(Pacijent pacijent) throws Exception {
+        posalji(Operacija.UBACI_PACIJENT, pacijent);
+    }
+
+    public void promeniPacijenta(Pacijent pacijent) throws Exception {
+        posalji(Operacija.PROMENI_PACIJENT, pacijent);
+    }
+
+    public void obrisiPacijenta(Pacijent pacijent) throws Exception {
+        posalji(Operacija.OBRISI_PACIJENT, pacijent);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Ordinacija> vratiListuOrdinacija() throws Exception {
+        return (List<Ordinacija>) posalji(Operacija.VRATI_LISTU_ORDINACIJA, null);
     }
 
     @SuppressWarnings("unchecked")

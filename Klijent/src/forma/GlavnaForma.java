@@ -4,15 +4,13 @@
  */
 package forma;
 
+import com.github.lgooddatepicker.components.DatePicker;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -24,7 +22,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumnModel;
 import kontroler.Kontroler;
@@ -40,9 +37,6 @@ import model.Termin;
  */
 public class GlavnaForma extends JFrame {
 
-    private static final DateTimeFormatter FORMAT_DATUMA =
-            DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
-
     /** Stavka koja u padajucim listama pretrage znaci "bez filtera". */
     private static final String SVI = "Svi";
 
@@ -51,7 +45,7 @@ public class GlavnaForma extends JFrame {
     private JTable tabelaTermina;
     private ModelTabeleTermin modelTabele;
 
-    private JTextField txtTrazeniDatum;
+    private DatePicker biracTrazenogDatuma;
     private JComboBox<Object> cmbTrazeniStatus;
     private JComboBox<Object> cmbTrazeniPacijent;
     private JButton btnPretrazi;
@@ -158,9 +152,10 @@ public class GlavnaForma extends JFrame {
                 BorderFactory.createEmptyBorder(0, 20, 10, 20),
                 BorderFactory.createTitledBorder("Pretraga termina")));
 
-        panel.add(new JLabel("Datum (yyyy-MM-dd):"));
-        txtTrazeniDatum = new JTextField(10);
-        panel.add(txtTrazeniDatum);
+        panel.add(new JLabel("Datum:"));
+        // prazan datum je dozvoljen i znaci da se po datumu ne filtrira
+        biracTrazenogDatuma = BiracDatuma.napravi(true);
+        panel.add(biracTrazenogDatuma);
 
         panel.add(new JLabel("Status:"));
         cmbTrazeniStatus = new JComboBox<>();
@@ -205,23 +200,8 @@ public class GlavnaForma extends JFrame {
      * Cita kriterijume iz polja i prikazuje termine koji im odgovaraju.
      */
     private void pretrazi() {
-        String unetDatum = txtTrazeniDatum.getText().trim();
-        LocalDate datum = null;
-        if (!unetDatum.isEmpty()) {
-            try {
-                datum = LocalDate.parse(unetDatum, FORMAT_DATUMA);
-            } catch (DateTimeParseException ex) {
-                JOptionPane.showMessageDialog(this,
-                        "Datum \"" + unetDatum + "\" nije ispravan.\n"
-                        + "Datum se unosi u formatu yyyy-MM-dd, na primer "
-                        + LocalDate.now().format(FORMAT_DATUMA) + ".\n"
-                        + "Ostavite polje prazno ako ne želite da filtrirate po datumu.",
-                        "Neispravan datum", JOptionPane.WARNING_MESSAGE);
-                txtTrazeniDatum.requestFocusInWindow();
-                txtTrazeniDatum.selectAll();
-                return;
-            }
-        }
+        // kalendar vraca null kada datum nije izabran, sto znaci bez filtera
+        LocalDate datum = biracTrazenogDatuma.getDate();
 
         Object izabranStatus = cmbTrazeniStatus.getSelectedItem();
         Object izabranPacijent = cmbTrazeniPacijent.getSelectedItem();
@@ -237,7 +217,7 @@ public class GlavnaForma extends JFrame {
      * Prazni polja pretrage i vraca prikaz svih termina ulogovanog stomatologa.
      */
     private void resetujFiltere() {
-        txtTrazeniDatum.setText("");
+        biracTrazenogDatuma.clear();
         cmbTrazeniStatus.setSelectedItem(SVI);
         cmbTrazeniPacijent.setSelectedItem(SVI);
 

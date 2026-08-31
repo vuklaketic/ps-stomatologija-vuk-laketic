@@ -4,6 +4,7 @@
  */
 package forma;
 
+import com.github.lgooddatepicker.components.DatePicker;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -14,8 +15,6 @@ import java.awt.Insets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -29,7 +28,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import kontroler.Kontroler;
 import model.Pacijent;
 import model.StatusTermina;
@@ -47,12 +45,6 @@ import model.Usluga;
  */
 public class NoviTerminDijalog extends JDialog {
 
-    /**
-     * Strogi format datuma - uz ResolverStyle.STRICT (i sablon uuuu umesto yyyy)
-     * odbacuju se i nepostojeci datumi poput 2026-02-31.
-     */
-    private static final DateTimeFormatter FORMAT_DATUMA =
-            DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter FORMAT_VREMENA = DateTimeFormatter.ofPattern("HH:mm");
 
     /** Radno vreme ordinacije i korak izmedju dva slobodna termina. */
@@ -69,7 +61,7 @@ public class NoviTerminDijalog extends JDialog {
     private JComboBox<Pacijent> cmbPacijent;
     private JComboBox<Usluga> cmbUsluga;
     private JComboBox<StatusTermina> cmbStatus;
-    private JTextField txtDatum;
+    private DatePicker biracDatuma;
     private JComboBox<LocalTime> cmbVreme;
     private JTextArea txtNapomena;
     private JButton btnPotvrdi;
@@ -110,7 +102,8 @@ public class NoviTerminDijalog extends JDialog {
         cmbUsluga = new JComboBox<>();
         cmbUsluga.setRenderer(new RendererUsluge());
         cmbStatus = new JComboBox<>(StatusTermina.values());
-        txtDatum = new JTextField(15);
+        // datum se bira iz kalendara, pa neispravan unos nije ni moguc
+        biracDatuma = BiracDatuma.napravi(false);
         cmbVreme = napraviBiracVremena();
         // napomena se pise u vise redova, pa polje raste nadole, a ne u stranu
         txtNapomena = new JTextArea(4, 15);
@@ -118,7 +111,7 @@ public class NoviTerminDijalog extends JDialog {
         txtNapomena.setWrapStyleWord(true);
 
         dodajRed(panel, gbc, 0, "Pacijent:", cmbPacijent);
-        dodajRed(panel, gbc, 1, "Datum (yyyy-MM-dd):", txtDatum);
+        dodajRed(panel, gbc, 1, "Datum:", biracDatuma);
         dodajRed(panel, gbc, 2, "Vreme:", cmbVreme);
         dodajRed(panel, gbc, 3, "Usluga:", cmbUsluga);
         dodajRed(panel, gbc, 4, "Status:", cmbStatus);
@@ -232,13 +225,13 @@ public class NoviTerminDijalog extends JDialog {
             // zakazan, pa polje stoji prikazano ali onemoguceno
             cmbStatus.setSelectedItem(StatusTermina.ZAKAZAN);
             cmbStatus.setEnabled(false);
-            txtDatum.setText(LocalDate.now().format(FORMAT_DATUMA));
+            biracDatuma.setDate(LocalDate.now());
             izaberiVreme(POCETAK_RADNOG_VREMENA);
             return;
         }
 
         if (terminZaIzmenu.getDatum() != null) {
-            txtDatum.setText(terminZaIzmenu.getDatum().format(FORMAT_DATUMA));
+            biracDatuma.setDate(terminZaIzmenu.getDatum());
         }
         izaberiVreme(terminZaIzmenu.getVreme());
         txtNapomena.setText(terminZaIzmenu.getNapomena());
@@ -372,30 +365,17 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Cita i validira datum iz tekstualnog polja. Ako unos nije ispravan,
-     * prikazuje poruku i vraca null, pa dijalog ostaje otvoren.
+     * Cita izabrani datum. Kalendar ne dozvoljava neispravan unos, pa ostaje
+     * samo provera da li je datum uopste izabran.
      */
     private LocalDate procitajDatum() {
-        String unos = txtDatum.getText().trim();
-        if (unos.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Morate uneti datum termina.",
+        LocalDate datum = biracDatuma.getDate();
+        if (datum == null) {
+            JOptionPane.showMessageDialog(this, "Morate izabrati datum termina.",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
-            txtDatum.requestFocusInWindow();
-            return null;
+            biracDatuma.openPopup();
         }
-
-        try {
-            return LocalDate.parse(unos, FORMAT_DATUMA);
-        } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Datum \"" + unos + "\" nije ispravan.\n"
-                    + "Datum se unosi u formatu yyyy-MM-dd, na primer " 
-                    + LocalDate.now().format(FORMAT_DATUMA) + ".",
-                    "Neispravan datum", JOptionPane.WARNING_MESSAGE);
-            txtDatum.requestFocusInWindow();
-            txtDatum.selectAll();
-            return null;
-        }
+        return datum;
     }
 
     /**

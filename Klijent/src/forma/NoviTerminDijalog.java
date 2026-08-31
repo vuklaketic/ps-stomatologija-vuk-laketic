@@ -27,6 +27,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import kontroler.Kontroler;
 import model.Pacijent;
@@ -69,7 +71,7 @@ public class NoviTerminDijalog extends JDialog {
     private JComboBox<StatusTermina> cmbStatus;
     private JTextField txtDatum;
     private JComboBox<LocalTime> cmbVreme;
-    private JTextField txtNapomena;
+    private JTextArea txtNapomena;
     private JButton btnPotvrdi;
     private JButton btnOdustani;
 
@@ -110,14 +112,17 @@ public class NoviTerminDijalog extends JDialog {
         cmbStatus = new JComboBox<>(StatusTermina.values());
         txtDatum = new JTextField(15);
         cmbVreme = napraviBiracVremena();
-        txtNapomena = new JTextField(15);
+        // napomena se pise u vise redova, pa polje raste nadole, a ne u stranu
+        txtNapomena = new JTextArea(4, 15);
+        txtNapomena.setLineWrap(true);
+        txtNapomena.setWrapStyleWord(true);
 
         dodajRed(panel, gbc, 0, "Pacijent:", cmbPacijent);
         dodajRed(panel, gbc, 1, "Datum (yyyy-MM-dd):", txtDatum);
         dodajRed(panel, gbc, 2, "Vreme:", cmbVreme);
         dodajRed(panel, gbc, 3, "Usluga:", cmbUsluga);
         dodajRed(panel, gbc, 4, "Status:", cmbStatus);
-        dodajRed(panel, gbc, 5, "Napomena:", txtNapomena);
+        dodajVisokRed(panel, gbc, 5, "Napomena:", new JScrollPane(txtNapomena));
 
         add(panel, BorderLayout.CENTER);
 
@@ -159,6 +164,30 @@ public class NoviTerminDijalog extends JDialog {
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(komponenta, gbc);
+    }
+
+    /**
+     * Dodaje red u kome komponenta zauzima prostor po visini, a ne samo po
+     * sirini. Labela se poravnava uz vrh, da stoji uz prvi red teksta.
+     */
+    private void dodajVisokRed(JPanel panel, GridBagConstraints gbc, int red, String naziv, Component komponenta) {
+        gbc.gridx = 0;
+        gbc.gridy = red;
+        gbc.weightx = 0;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        panel.add(new JLabel(naziv), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = red;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel.add(komponenta, gbc);
+
+        // vracanje na podrazumevano stanje, da naredni redovi ostanu jednoredni
+        gbc.weighty = 0;
+        gbc.anchor = GridBagConstraints.WEST;
     }
 
     /**

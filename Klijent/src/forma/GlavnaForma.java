@@ -134,7 +134,7 @@ public class GlavnaForma extends JFrame {
         btnNovi.addActionListener(e -> noviTermin());
         btnIzmeni.addActionListener(e -> izmeniTermin());
         btnObrisi.addActionListener(e -> obrisiTermin());
-        btnOsvezi.addActionListener(e -> ucitajTermine());
+        btnOsvezi.addActionListener(e -> ucitajTermine(true));
         btnOdjava.addActionListener(e -> odjaviSe());
 
         // najmanja sirina prozora se izvodi iz stvarne sirine panela za
@@ -274,7 +274,7 @@ public class GlavnaForma extends JFrame {
         kriterijumStatus = izabranStatus instanceof StatusTermina ? (StatusTermina) izabranStatus : null;
         kriterijumPacijent = izabranPacijent instanceof Pacijent ? (Pacijent) izabranPacijent : null;
 
-        ucitajTermine();
+        ucitajTermine(true);
     }
 
     /**
@@ -289,7 +289,7 @@ public class GlavnaForma extends JFrame {
         kriterijumStatus = null;
         kriterijumPacijent = null;
 
-        ucitajTermine();
+        ucitajTermine(true);
     }
 
     /**
@@ -316,15 +316,38 @@ public class GlavnaForma extends JFrame {
      * Ucitava termine ulogovanog stomatologa koji odgovaraju poslednje zadatim
      * kriterijumima pretrage i prikazuje ih u tabeli. Ako kriterijumi nisu
      * zadati, prikazuju se svi njegovi termini.
+     *
+     * Ovu inacicu koriste dijalog za termin i brisanje termina, pa se prazna
+     * lista ne prijavljuje posebnom porukom.
      */
     public final void ucitajTermine() {
+        ucitajTermine(false);
+    }
+
+    /**
+     * @param prijaviPrazanRezultat true kada je prikaz liste posledica radnje
+     * korisnika (pretraga, resetovanje filtera, osvezavanje), pa treba da dobije
+     * poruku ako nijedan termin ne odgovara kriterijumima; false pri
+     * osvezavanju posle unosa, izmene ili brisanja termina, gde je korisnik
+     * vec dobio poruku o ishodu same radnje
+     */
+    private void ucitajTermine(boolean prijaviPrazanRezultat) {
+        List<Termin> termini;
         try {
-            List<Termin> termini = Kontroler.getInstanca().pretraziTermineUlogovanog(
+            termini = Kontroler.getInstanca().pretraziTermineUlogovanog(
                     kriterijumDatum, kriterijumStatus, kriterijumPacijent);
-            modelTabele.postaviListu(termini);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        modelTabele.postaviListu(termini);
+
+        if (prijaviPrazanRezultat && termini.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Sistem ne može da nađe termine po zadatim kriterijumima.",
+                    "Pretraga termina", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

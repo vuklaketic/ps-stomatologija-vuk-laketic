@@ -7,6 +7,7 @@ package model;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import util.SqlUtil;
 
 /**
  *
@@ -66,7 +67,7 @@ public class Specijalizacija implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        return "'" + naziv + "'";
+        return "'" + SqlUtil.escapiraj(naziv) + "'";
     }
 
     @Override
@@ -86,7 +87,7 @@ public class Specijalizacija implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        return "naziv='" + naziv + "'";
+        return "naziv='" + SqlUtil.escapiraj(naziv) + "'";
     }
 
 }

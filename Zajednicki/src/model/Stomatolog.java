@@ -7,6 +7,7 @@ package model;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import util.SqlUtil;
 /**
  *
  * @author vukla
@@ -120,7 +121,9 @@ public class Stomatolog implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        return "'" + ime + "','" + prezime + "','" + email + "','" + korisnickoIme + "','" + sifra + "','" + brojLicence + "'";
+        return "'" + SqlUtil.escapiraj(ime) + "','" + SqlUtil.escapiraj(prezime) + "','"
+                + SqlUtil.escapiraj(email) + "','" + SqlUtil.escapiraj(korisnickoIme) + "','"
+                + SqlUtil.escapiraj(sifra) + "','" + SqlUtil.escapiraj(brojLicence) + "'";
     }
 
     @Override
@@ -140,8 +143,11 @@ public class Stomatolog implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        return "ime='" + ime + "', prezime='" + prezime + "', email='" + email + "', korisnickoIme='" + korisnickoIme
-                + "', sifra='" + sifra + "', brojLicence='" + brojLicence + "'";
+        return "ime='" + SqlUtil.escapiraj(ime) + "', prezime='" + SqlUtil.escapiraj(prezime)
+                + "', email='" + SqlUtil.escapiraj(email)
+                + "', korisnickoIme='" + SqlUtil.escapiraj(korisnickoIme)
+                + "', sifra='" + SqlUtil.escapiraj(sifra)
+                + "', brojLicence='" + SqlUtil.escapiraj(brojLicence) + "'";
     }
 
 }

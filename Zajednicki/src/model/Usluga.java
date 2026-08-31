@@ -7,6 +7,7 @@ package model;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import util.SqlUtil;
 
 /**
  *
@@ -88,7 +89,7 @@ public class Usluga implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        return "'" + naziv + "'," + cena + "," + trajanje;
+        return "'" + SqlUtil.escapiraj(naziv) + "'," + cena + "," + trajanje;
     }
 
     @Override
@@ -108,7 +109,7 @@ public class Usluga implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        return "naziv='" + naziv + "', cena=" + cena + ", trajanje=" + trajanje;
+        return "naziv='" + SqlUtil.escapiraj(naziv) + "', cena=" + cena + ", trajanje=" + trajanje;
     }
 
 }

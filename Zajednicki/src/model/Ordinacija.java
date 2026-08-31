@@ -7,6 +7,7 @@ package model;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import util.SqlUtil;
 
 /**
  *
@@ -82,7 +83,7 @@ public class Ordinacija implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        return "'" + naziv + "','" + adresa + "'";
+        return "'" + SqlUtil.escapiraj(naziv) + "','" + SqlUtil.escapiraj(adresa) + "'";
     }
 
     @Override
@@ -102,7 +103,7 @@ public class Ordinacija implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        return "naziv='" + naziv + "', adresa='" + adresa + "'";
+        return "naziv='" + SqlUtil.escapiraj(naziv) + "', adresa='" + SqlUtil.escapiraj(adresa) + "'";
     }
 
 }

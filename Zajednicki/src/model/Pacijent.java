@@ -7,6 +7,7 @@ package model;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import util.SqlUtil;
 
 /**
  *
@@ -121,7 +122,9 @@ public class Pacijent implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        return "'" + ime + "','" + prezime + "','" + brojTelefona + "','" + brojKnjizice + "'," + ordinacija.getIdOrdinacija();
+        return "'" + SqlUtil.escapiraj(ime) + "','" + SqlUtil.escapiraj(prezime) + "','"
+                + SqlUtil.escapiraj(brojTelefona) + "','" + SqlUtil.escapiraj(brojKnjizice) + "',"
+                + ordinacija.getIdOrdinacija();
     }
 
     @Override
@@ -141,8 +144,10 @@ public class Pacijent implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        return "ime='" + ime + "', prezime='" + prezime + "', brojTelefona='" + brojTelefona
-                + "', brojKnjizice='" + brojKnjizice + "', idOrdinacija=" + ordinacija.getIdOrdinacija();
+        return "ime='" + SqlUtil.escapiraj(ime) + "', prezime='" + SqlUtil.escapiraj(prezime)
+                + "', brojTelefona='" + SqlUtil.escapiraj(brojTelefona)
+                + "', brojKnjizice='" + SqlUtil.escapiraj(brojKnjizice)
+                + "', idOrdinacija=" + ordinacija.getIdOrdinacija();
     }
 
 }

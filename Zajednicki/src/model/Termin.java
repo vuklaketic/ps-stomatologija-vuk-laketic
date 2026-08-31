@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import util.SqlUtil;
 
 /**
  *
@@ -172,7 +173,8 @@ public class Termin implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        return "'" + datum + "','" + vreme + "','" + status.name() + "','" + napomena + "',"
+        return "'" + datum + "','" + vreme + "','" + status.name() + "','"
+                + SqlUtil.escapiraj(napomena) + "',"
                 + stomatolog.getIdStomatolog() + "," + pacijent.getIdPacijent();
     }
 
@@ -193,7 +195,8 @@ public class Termin implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        return "datum='" + datum + "', vreme='" + vreme + "', status='" + status.name() + "', napomena='" + napomena
+        return "datum='" + datum + "', vreme='" + vreme + "', status='" + status.name()
+                + "', napomena='" + SqlUtil.escapiraj(napomena)
                 + "', idStomatolog=" + stomatolog.getIdStomatolog() + ", idPacijent=" + pacijent.getIdPacijent();
     }
 

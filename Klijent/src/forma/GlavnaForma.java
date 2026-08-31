@@ -41,6 +41,7 @@ public class GlavnaForma extends JFrame {
     private JButton btnIzmeni;
     private JButton btnObrisi;
     private JButton btnOsvezi;
+    private JButton btnOdjava;
 
     public GlavnaForma() {
         this.ulogovaniStomatolog = Kontroler.getInstanca().getUlogovaniStomatolog();
@@ -55,11 +56,20 @@ public class GlavnaForma extends JFrame {
         setResizable(true);
         setLayout(new BorderLayout());
 
+        // u zaglavlju su podaci o ulogovanom stomatologu, a odjava je u desnom
+        // uglu, odvojena od akcionih dugmadi nad terminima
+        JPanel panelZaglavlje = new JPanel(new BorderLayout());
+        panelZaglavlje.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
         JLabel lblUlogovani = new JLabel("Ulogovani stomatolog: "
                 + ulogovaniStomatolog.getIme() + " " + ulogovaniStomatolog.getPrezime());
         lblUlogovani.setFont(lblUlogovani.getFont().deriveFont(Font.BOLD));
-        lblUlogovani.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-        add(lblUlogovani, BorderLayout.NORTH);
+        panelZaglavlje.add(lblUlogovani, BorderLayout.WEST);
+
+        btnOdjava = new JButton("Odjavi se");
+        panelZaglavlje.add(btnOdjava, BorderLayout.EAST);
+
+        add(panelZaglavlje, BorderLayout.NORTH);
 
         modelTabele = new ModelTabeleTermin(new ArrayList<Termin>());
         tabelaTermina = new JTable(modelTabele);
@@ -88,6 +98,7 @@ public class GlavnaForma extends JFrame {
         btnIzmeni.addActionListener(e -> izmeniTermin());
         btnObrisi.addActionListener(e -> obrisiTermin());
         btnOsvezi.addActionListener(e -> ucitajTermine());
+        btnOdjava.addActionListener(e -> odjaviSe());
 
         // prozor se otvara maksimizovan, a ova velicina vazi kada ga korisnik
         // vrati iz maksimizovanog stanja
@@ -186,6 +197,19 @@ public class GlavnaForma extends JFrame {
             return null;
         }
         return modelTabele.vratiTermin(tabelaTermina.convertRowIndexToModel(red));
+    }
+
+    /**
+     * Odjavljuje stomatologa i vraca korisnika na formu za prijavu.
+     *
+     * Kontroler pri odjavi zatvara i vezu sa serverom, a Komunikacija pri
+     * zatvaranju ponistava svoju instancu, pa se pri sledecoj prijavi otvara
+     * nova veza. Aplikacija nastavlja da radi - ne poziva se System.exit.
+     */
+    private void odjaviSe() {
+        Kontroler.getInstanca().odjaviSe();
+        dispose();
+        new LoginForma().setVisible(true);
     }
 
     private void zatvoriAplikaciju() {

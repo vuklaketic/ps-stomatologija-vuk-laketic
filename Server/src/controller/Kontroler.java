@@ -1,10 +1,15 @@
 package controller;
 
 import java.util.List;
+import model.Ordinacija;
 import model.Pacijent;
 import model.Stomatolog;
 import model.Termin;
 import model.Usluga;
+import so.ordinacija.VratiListuOrdinacijaSO;
+import so.pacijent.ObrisiPacijentSO;
+import so.pacijent.PromeniPacijentSO;
+import so.pacijent.UbaciPacijentSO;
 import so.pacijent.VratiListuPacijenataSO;
 import so.prijava.PrijavaStomatologaSO;
 import so.stomatolog.VratiListuStomatologaSO;
@@ -84,7 +89,34 @@ public class Kontroler {
     }
 
     public synchronized List<Pacijent> vratiListuPacijenata() throws Exception {
+        return vratiListuPacijenata(null);
+    }
+
+    public synchronized List<Pacijent> vratiListuPacijenata(Pacijent kriterijum) throws Exception {
         VratiListuPacijenataSO so = new VratiListuPacijenataSO();
+        so.izvrsiOperaciju(kriterijum);
+        return so.getLista();
+    }
+
+    public synchronized Pacijent ubaciPacijenta(Pacijent pacijent) throws Exception {
+        UbaciPacijentSO so = new UbaciPacijentSO();
+        so.izvrsiOperaciju(pacijent);
+        return so.getZapamceni();
+    }
+
+    public synchronized Pacijent promeniPacijenta(Pacijent pacijent) throws Exception {
+        PromeniPacijentSO so = new PromeniPacijentSO();
+        so.izvrsiOperaciju(pacijent);
+        return so.getIzmenjeni();
+    }
+
+    public synchronized void obrisiPacijenta(Pacijent pacijent) throws Exception {
+        ObrisiPacijentSO so = new ObrisiPacijentSO();
+        so.izvrsiOperaciju(pacijent);
+    }
+
+    public synchronized List<Ordinacija> vratiListuOrdinacija() throws Exception {
+        VratiListuOrdinacijaSO so = new VratiListuOrdinacijaSO();
         so.izvrsiOperaciju(null);
         return so.getLista();
     }

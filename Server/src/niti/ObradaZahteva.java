@@ -10,6 +10,7 @@ import komunikacija.Operacija;
 import komunikacija.Posiljalac;
 import komunikacija.Primalac;
 import komunikacija.Zahtev;
+import model.Pacijent;
 import model.Termin;
 
 /**
@@ -114,7 +115,20 @@ public class ObradaZahteva extends Thread {
                 return kontroler.vratiListuStomatologa();
 
             case VRATI_LISTU_PACIJENATA:
-                return kontroler.vratiListuPacijenata();
+                return kontroler.vratiListuPacijenata((Pacijent) parametar);
+
+            case VRATI_LISTU_ORDINACIJA:
+                return kontroler.vratiListuOrdinacija();
+
+            case UBACI_PACIJENT:
+                return kontroler.ubaciPacijenta((Pacijent) parametar);
+
+            case PROMENI_PACIJENT:
+                return kontroler.promeniPacijenta((Pacijent) parametar);
+
+            case OBRISI_PACIJENT:
+                kontroler.obrisiPacijenta((Pacijent) parametar);
+                return null;
 
             case VRATI_LISTU_USLUGA:
                 return kontroler.vratiListuUsluga();

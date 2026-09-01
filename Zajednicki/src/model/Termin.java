@@ -130,6 +130,7 @@ public class Termin implements ApstraktniDomenskiObjekat {
 
             String nazivStatusa = rs.getString("termin.status");
             StatusTermina status = nazivStatusa == null ? null : StatusTermina.valueOf(nazivStatusa);
+            status = statusZaPrikaz(status, datum, vreme);
 
             String napomena = rs.getString("termin.napomena");
 
@@ -159,6 +160,34 @@ public class Termin implements ApstraktniDomenskiObjekat {
             lista.add(t);
         }
         return lista;
+    }
+
+    /**
+     * Vraca status pod kojim se termin prikazuje korisniku.
+     *
+     * Zakazan termin cije je vreme proteklo prikazuje se kao odrzan, jer se
+     * vise ne moze ni odrzati ni otkazati - to trazi i pravilo iz specifikacije
+     * po kome protekao termin ima status zavrsenog. Otkazan termin se ne dira,
+     * jer se on nije ni desio, pa nema smisla da protekom vremena postane
+     * odrzan.
+     *
+     * Prevodjenje se radi samo nad objektom koji se vraca pozivaocu - u bazi
+     * status ostaje onakav kakav je zapisan, sve dok stomatolog ne zapamti
+     * termin sa forme. Zato poslovna pravila, koja rade nad stvarnim stanjem
+     * baze (zauzetost termina i najveci dnevni broj termina), ovim nisu
+     * dodirnuta: ona status proveravaju u samom SQL upitu, a ne na ovom
+     * objektu.
+     */
+    private static StatusTermina statusZaPrikaz(StatusTermina status, LocalDate datum, LocalTime vreme) {
+        if (status != StatusTermina.ZAKAZAN || datum == null || vreme == null) {
+            return status;
+        }
+
+        LocalDate danas = LocalDate.now();
+        boolean proteklo = datum.isBefore(danas)
+                || (datum.equals(danas) && vreme.isBefore(LocalTime.now()));
+
+        return proteklo ? StatusTermina.ODRZAN : status;
     }
 
     @Override

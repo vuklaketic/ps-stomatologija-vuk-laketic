@@ -132,8 +132,9 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
             StavkaTermina nova = pronadjiPoUsluzi(noveStavke, stara.getUsluga());
             nova.setTermin(termin);
             nova.setRb(stara.getRb());
-            // iznos je izvedena vrednost, pa se racuna ovde, a ne preuzima
-            // onakav kakav je stigao sa klijenta
+            // cena usluge i iznos su vezani za sifarnik usluga, pa se ne
+            // preuzimaju onakvi kakvi su stigli sa klijenta
+            nova.setCenaUsluge(vratiCenuUsluge(nova));
             nova.izracunajIznos();
             if (jeIzmenjena(stara, nova)) {
                 broker.izmeni(nova);
@@ -146,6 +147,7 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
             if (pronadjiPoUsluzi(stareStavke, nova.getUsluga()) == null) {
                 nova.setTermin(termin);
                 nova.setRb(sledeciRb++);
+                nova.setCenaUsluge(vratiCenuUsluge(nova));
                 nova.izracunajIznos();
                 broker.dodaj(nova);
             }
@@ -194,6 +196,23 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
     private boolean jeIzmenjena(StavkaTermina stara, StavkaTermina nova) {
         return stara.getKolicina() != nova.getKolicina()
                 || Math.abs(stara.getCenaUsluge() - nova.getCenaUsluge()) >= TOLERANCIJA_CENE;
+    }
+
+    /**
+     * Cita cenu usluge iz sifarnika, jer je cena stavke po pravilu upravo cena
+     * usluge koja je na stavci.
+     */
+    private double vratiCenuUsluge(StavkaTermina stavka) throws Exception {
+        String uslov = " WHERE usluga.idUsluga = " + stavka.getUsluga().getIdUsluga();
+        Usluga usluga = (Usluga) broker.vratiObjekat(new Usluga(), uslov);
+
+        if (usluga == null) {
+            throw new Exception("Usluga sa stavke termina ne postoji u bazi.");
+        }
+        if (usluga.getCena() <= 0) {
+            throw new Exception("Cena usluge mora biti veća od nule.");
+        }
+        return usluga.getCena();
     }
 
     /**

@@ -556,6 +556,12 @@ public class NoviTerminDijalog extends JDialog {
             return;
         }
 
+        if (jeUProslosti(datum, vreme) && !jeZadrzanPostojeciTermin(datum, vreme)) {
+            JOptionPane.showMessageDialog(this, "Termin ne može biti zakazan u prošlosti.",
+                    "Upozorenje", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         if (modelStavki.jePrazna()) {
             JOptionPane.showMessageDialog(this, "Morate dodati bar jednu stavku termina.",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
@@ -608,15 +614,8 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Cita izabrani datum.
-     *
-     * Kalendar ne dozvoljava neispravan unos, pa ostaje provera da li je datum
-     * izabran i da li je u buducnosti - termin se ne zakazuje unazad. Termin
-     * koji je vec zakazan zadrzava svoj datum i kada je taj datum prosao, da bi
-     * mogao da se dopuni ili da mu se promeni status, ali se ne moze premestiti
-     * na neki drugi protekli dan.
-     *
-     * @return izabrani datum ili null ako datum nije izabran ili nije ispravan
+     * Cita izabrani datum. Kalendar ne dozvoljava neispravan unos, pa ostaje
+     * samo provera da li je datum uopste izabran.
      */
     private LocalDate procitajDatum() {
         LocalDate datum = biracDatuma.getDate();
@@ -624,23 +623,33 @@ public class NoviTerminDijalog extends JDialog {
             JOptionPane.showMessageDialog(this, "Morate izabrati datum termina.",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
             biracDatuma.openPopup();
-            return null;
-        }
-
-        if (datum.isBefore(LocalDate.now()) && !jeZadrzanPostojeciDatum(datum)) {
-            JOptionPane.showMessageDialog(this, "Datum termina ne može biti u prošlosti.",
-                    "Upozorenje", JOptionPane.WARNING_MESSAGE);
-            biracDatuma.openPopup();
-            return null;
         }
         return datum;
     }
 
     /**
-     * Utvrdjuje da li je u pitanju datum koji termin vec ima zapamcen.
+     * Utvrdjuje da li zadati trenutak vec pripada proslosti. Za danasnji dan se
+     * poredi i vreme, jer termin koji je danas u devet ujutru u podne vise ne
+     * moze da se zakaze.
      */
-    private boolean jeZadrzanPostojeciDatum(LocalDate datum) {
-        return jeIzmena() && datum.equals(terminZaIzmenu.getDatum());
+    private boolean jeUProslosti(LocalDate datum, LocalTime vreme) {
+        LocalDate danas = LocalDate.now();
+        if (datum.isBefore(danas)) {
+            return true;
+        }
+        return datum.equals(danas) && vreme.isBefore(LocalTime.now());
+    }
+
+    /**
+     * Utvrdjuje da li su datum i vreme ostali onakvi kakve termin vec ima
+     * zapamcene. Takav termin se ne premesta, pa pravilo o proslosti za njega
+     * ne vazi - inace protekao termin ne bi mogao ni da se dopuni ni da mu se
+     * promeni status.
+     */
+    private boolean jeZadrzanPostojeciTermin(LocalDate datum, LocalTime vreme) {
+        return jeIzmena()
+                && datum.equals(terminZaIzmenu.getDatum())
+                && vreme.equals(terminZaIzmenu.getVreme());
     }
 
     /**

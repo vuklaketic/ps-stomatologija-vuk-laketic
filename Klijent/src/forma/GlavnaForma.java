@@ -88,6 +88,7 @@ public class GlavnaForma extends JFrame {
     private JMenuItem mniOsvezi;
     private JMenuItem mniPacijenti;
     private JMenuItem mniSpecijalizacija;
+    private JMenuItem mniOProgramu;
     private JMenuItem mniOdjava;
 
     private JButton btnNovi;
@@ -196,6 +197,7 @@ public class GlavnaForma extends JFrame {
         mniOsvezi.addActionListener(e -> ucitajTermine(true));
         mniPacijenti.addActionListener(e -> otvoriPacijente());
         mniSpecijalizacija.addActionListener(e -> novaSpecijalizacija());
+        mniOProgramu.addActionListener(e -> oProgramu());
         mniOdjava.addActionListener(e -> odjaviSe());
 
         // najmanja sirina prozora se izvodi iz stvarne sirine panela za
@@ -229,36 +231,60 @@ public class GlavnaForma extends JFrame {
     private JMenuBar napraviMeni() {
         JMenuBar meni = new JMenuBar();
 
-        JMenu meniTermini = new JMenu("Termini");
-        meniTermini.setMnemonic('T');
+        // dokumenti - termin je dokument koji opisuje pruzanje usluge
+        JMenu meniDokumenti = new JMenu("Dokumenti");
+        meniDokumenti.setMnemonic('D');
+
+        JMenu podmeniTermin = new JMenu("Termin");
+        podmeniTermin.setMnemonic('T');
         mniNoviTermin = napraviStavku("Novi termin", 'N', KeyEvent.VK_N);
         mniIzmeniTermin = napraviStavku("Izmeni termin", 'I', KeyEvent.VK_E);
         mniObrisiTermin = napraviStavku("Obriši termin", 'O', KeyEvent.VK_D);
         mniOsvezi = napraviStavku("Osveži", 'v', 0);
         // osvezavanje ima uobicajenu precicu, bez modifikatora
         mniOsvezi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
-        meniTermini.add(mniNoviTermin);
-        meniTermini.add(mniIzmeniTermin);
-        meniTermini.add(mniObrisiTermin);
-        meniTermini.addSeparator();
-        meniTermini.add(mniOsvezi);
-        meni.add(meniTermini);
+        podmeniTermin.add(mniNoviTermin);
+        podmeniTermin.add(mniIzmeniTermin);
+        podmeniTermin.add(mniObrisiTermin);
+        podmeniTermin.addSeparator();
+        podmeniTermin.add(mniOsvezi);
+        meniDokumenti.add(podmeniTermin);
+        meni.add(meniDokumenti);
 
-        JMenu meniPacijenti = new JMenu("Pacijenti");
-        meniPacijenti.setMnemonic('P');
+        // primalac usluge - pacijent
+        JMenu meniPrimalac = new JMenu("Primalac usluge");
+        meniPrimalac.setMnemonic('P');
+
+        JMenu podmeniPacijent = new JMenu("Pacijent");
+        podmeniPacijent.setMnemonic('a');
         mniPacijenti = napraviStavku("Upravljanje pacijentima...", 'U', 0);
-        meniPacijenti.add(mniPacijenti);
-        meni.add(meniPacijenti);
+        podmeniPacijent.add(mniPacijenti);
+        meniPrimalac.add(podmeniPacijent);
+        meni.add(meniPrimalac);
 
+        // sifarnici - od tri sifarnika iz specifikacije, forma postoji samo za
+        // specijalizaciju, pa se ostala dva ne prikazuju kao prazne stavke
         JMenu meniSifarnici = new JMenu("Šifarnici");
         meniSifarnici.setMnemonic('S');
+
+        JMenu podmeniSpecijalizacija = new JMenu("Specijalizacija");
+        podmeniSpecijalizacija.setMnemonic('c');
         mniSpecijalizacija = napraviStavku("Nova specijalizacija...", 'N', 0);
-        meniSifarnici.add(mniSpecijalizacija);
+        podmeniSpecijalizacija.add(mniSpecijalizacija);
+        meniSifarnici.add(podmeniSpecijalizacija);
         meni.add(meniSifarnici);
+
+        // podesavanja - klijent nema sta da podesava, jer se podaci o bazi
+        // zadaju na serverskoj formi, pa je ovde samo podatak o programu
+        JMenu meniPodesavanja = new JMenu("Podešavanja");
+        meniPodesavanja.setMnemonic('e');
+        mniOProgramu = napraviStavku("O programu", 'O', 0);
+        meniPodesavanja.add(mniOProgramu);
+        meni.add(meniPodesavanja);
 
         JMenu meniNalog = new JMenu("Nalog");
         meniNalog.setMnemonic('N');
-        mniOdjava = napraviStavku("Odjavi se", 'O', 0);
+        mniOdjava = napraviStavku("Odjavi se", 'j', 0);
         meniNalog.add(mniOdjava);
         meni.add(meniNalog);
 
@@ -540,6 +566,21 @@ public class GlavnaForma extends JFrame {
                             : "Sistem je našao termine po zadatim kriterijumima.",
                     "Pretraga termina", JOptionPane.INFORMATION_MESSAGE);
         }
+    }
+
+    /**
+     * Prikazuje osnovne podatke o programu.
+     */
+    private void oProgramu() {
+        JOptionPane.showMessageDialog(this,
+                "Softverski sistem za zakazivanje termina\n"
+                + "stomatološke ordinacije\n\n"
+                + "Verzija 1.0\n\n"
+                + "Seminarski rad iz predmeta Projektovanje softvera\n"
+                + "Fakultet organizacionih nauka, Beograd\n\n"
+                + "Student: Vuk Laketić, 2023-0013\n"
+                + "Mentor: prof. dr Siniša Vlajić",
+                "O programu", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**

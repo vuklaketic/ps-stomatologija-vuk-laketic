@@ -263,11 +263,11 @@ public class UpravljanjePacijentimaForma extends JFrame {
     }
 
     /**
-     * @param prijaviPrazanRezultat true kada je prikaz liste posledica radnje
-     * korisnika (pretraga, resetovanje filtera, osvezavanje), pa treba da dobije
-     * poruku ako nijedan pacijent ne odgovara kriterijumima
+     * @param prijaviIshod true kada je prikaz liste posledica pretrage koju je
+     * pokrenuo korisnik (pretraga, resetovanje filtera, osvezavanje), pa
+     * scenario trazi poruku o ishodu - i kada su pacijenti nadjeni i kada nisu
      */
-    private void ucitajPacijente(boolean prijaviPrazanRezultat) {
+    private void ucitajPacijente(boolean prijaviIshod) {
         List<Pacijent> pacijenti;
         try {
             pacijenti = Kontroler.getInstanca().pretraziPacijente(
@@ -280,9 +280,11 @@ public class UpravljanjePacijentimaForma extends JFrame {
 
         modelTabele.postaviListu(pacijenti);
 
-        if (prijaviPrazanRezultat && pacijenti.isEmpty()) {
+        if (prijaviIshod) {
             JOptionPane.showMessageDialog(this,
-                    "Sistem ne može da nađe pacijente po zadatim kriterijumima.",
+                    pacijenti.isEmpty()
+                            ? "Sistem ne može da nađe pacijente po zadatim kriterijumima."
+                            : "Sistem je našao pacijente po zadatim kriterijumima.",
                     "Pretraga pacijenata", JOptionPane.INFORMATION_MESSAGE);
         }
     }

@@ -374,13 +374,13 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
-     * @param prijaviPrazanRezultat true kada je prikaz liste posledica radnje
-     * korisnika (pretraga, resetovanje filtera, osvezavanje), pa treba da dobije
-     * poruku ako nijedan termin ne odgovara kriterijumima; false pri
-     * osvezavanju posle unosa, izmene ili brisanja termina, gde je korisnik
-     * vec dobio poruku o ishodu same radnje
+     * @param prijaviIshod true kada je prikaz liste posledica pretrage koju je
+     * pokrenuo korisnik (pretraga, resetovanje filtera, osvezavanje), pa
+     * scenario trazi poruku o ishodu - i kada su termini nadjeni i kada nisu;
+     * false pri osvezavanju posle unosa, izmene ili brisanja termina, gde je
+     * korisnik vec dobio poruku o ishodu same radnje
      */
-    private void ucitajTermine(boolean prijaviPrazanRezultat) {
+    private void ucitajTermine(boolean prijaviIshod) {
         List<Termin> termini;
         try {
             termini = Kontroler.getInstanca().pretraziTermineUlogovanog(
@@ -393,9 +393,11 @@ public class GlavnaForma extends JFrame {
 
         modelTabele.postaviListu(termini);
 
-        if (prijaviPrazanRezultat && termini.isEmpty()) {
+        if (prijaviIshod) {
             JOptionPane.showMessageDialog(this,
-                    "Sistem ne može da nađe termine po zadatim kriterijumima.",
+                    termini.isEmpty()
+                            ? "Sistem ne može da nađe termine po zadatim kriterijumima."
+                            : "Sistem je našao termine po zadatim kriterijumima.",
                     "Pretraga termina", JOptionPane.INFORMATION_MESSAGE);
         }
     }
@@ -404,11 +406,19 @@ public class GlavnaForma extends JFrame {
         new NoviTerminDijalog(this, null).setVisible(true);
     }
 
+    /**
+     * Otvara dijalog za izmenu izabranog termina. Pre samog dijaloga sistem
+     * javlja da je nasao termin, kako propisuje scenario slucaja koriscenja.
+     */
     private void izmeniTermin() {
         Termin izabrani = vratiIzabraniTermin();
         if (izabrani == null) {
             return;
         }
+
+        JOptionPane.showMessageDialog(this, "Sistem je našao termin.",
+                "Termin", JOptionPane.INFORMATION_MESSAGE);
+
         new NoviTerminDijalog(this, izabrani).setVisible(true);
     }
 

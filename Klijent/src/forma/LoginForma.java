@@ -132,6 +132,9 @@ public class LoginForma extends JFrame {
             return;
         }
 
+        JOptionPane.showMessageDialog(this, "Korisničko ime i šifra su ispravni.",
+                "Prijava", JOptionPane.INFORMATION_MESSAGE);
+
         new GlavnaForma().setVisible(true);
         dispose();
     }

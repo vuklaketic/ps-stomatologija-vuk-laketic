@@ -124,8 +124,8 @@ INSERT INTO specijalizacija (naziv) VALUES
     ('Protetika');
 
 INSERT INTO stomatolog (ime, prezime, email, korisnickoIme, sifra, brojLicence) VALUES
-    ('Petar', 'Petrovic', 'petar.petrovic@dental.rs', 'pera',  'pera123',  'L-1001'),
-    ('Milica', 'Jovanovic', 'milica.jovanovic@dental.rs', 'mica', 'mica123', 'L-1002'),
+    ('Petar', 'Petrovic', 'petar.petrovic@dental.rs', 'pera',  'pera123456',  'L-1001'),
+    ('Milica', 'Jovanovic', 'milica.jovanovic@dental.rs', 'mica', 'mica123456', 'L-1002'),
     ('Nikola', 'Ilic', 'nikola.ilic@dental.rs', 'nikola', 'nikola123', 'L-1003');
 
 INSERT INTO stspec (idStomatolog, idSpecijalizacija, datumSticanja) VALUES
@@ -142,10 +142,10 @@ INSERT INTO usluga (naziv, cena, trajanje) VALUES
     ('Izbeljivanje zuba', 12000.00, 60);
 
 INSERT INTO pacijent (ime, prezime, brojTelefona, brojKnjizice, idOrdinacija) VALUES
-    ('Marko', 'Markovic', '0641234567', 'K-0001', 1),
-    ('Jelena', 'Nikolic', '0637654321', 'K-0002', 1),
-    ('Stefan', 'Stankovic', '0611112222', 'K-0003', 2),
-    ('Ana', 'Popovic', '0653334444', 'K-0004', 2);
+    ('Marko', 'Markovic', '0641234567', '10000000001', 1),
+    ('Jelena', 'Nikolic', '0637654321', '09876543212', 1),
+    ('Stefan', 'Stankovic', '0611112222', '10000000003', 2),
+    ('Ana', 'Popovic', '0653334444', '10000000004', 2);
 
 INSERT INTO termin (datum, vreme, status, napomena, idStomatolog, idPacijent) VALUES
     ('2026-09-01', '09:00:00', 'ZAKAZAN', 'Redovna kontrola', 1, 1),

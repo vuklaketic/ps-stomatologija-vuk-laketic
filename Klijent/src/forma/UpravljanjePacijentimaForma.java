@@ -50,6 +50,7 @@ public class UpravljanjePacijentimaForma extends JFrame {
     private JComboBox<Object> cmbTrazenaOrdinacija;
     private JButton btnPretrazi;
     private JButton btnResetuj;
+    private JButton btnNazad;
 
     private JButton btnNovi;
     private JButton btnIzmeni;
@@ -77,13 +78,23 @@ public class UpravljanjePacijentimaForma extends JFrame {
         setResizable(true);
         setLayout(new BorderLayout());
 
+        // u zaglavlju je naslov, a povratak na termine je u desnom uglu,
+        // odvojen od akcionih dugmadi nad pacijentima
+        JPanel panelZaglavlje = new JPanel(new BorderLayout());
+        panelZaglavlje.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
         JLabel lblNaslov = new JLabel("Pregled i unos pacijenata");
         lblNaslov.setFont(lblNaslov.getFont().deriveFont(Font.BOLD));
-        lblNaslov.setBorder(BorderFactory.createEmptyBorder(15, 20, 10, 20));
+        panelZaglavlje.add(lblNaslov, BorderLayout.WEST);
+
+        JPanel panelZaglavljeDesno = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        btnNazad = new JButton("Nazad");
+        panelZaglavljeDesno.add(btnNazad);
+        panelZaglavlje.add(panelZaglavljeDesno, BorderLayout.EAST);
 
         JPanel panelPretrage = napraviPanelPretrage();
         JPanel panelGore = new JPanel(new BorderLayout());
-        panelGore.add(lblNaslov, BorderLayout.NORTH);
+        panelGore.add(panelZaglavlje, BorderLayout.NORTH);
         panelGore.add(panelPretrage, BorderLayout.CENTER);
         add(panelGore, BorderLayout.NORTH);
 
@@ -112,6 +123,8 @@ public class UpravljanjePacijentimaForma extends JFrame {
         btnIzmeni.addActionListener(e -> izmeniPacijenta());
         btnObrisi.addActionListener(e -> obrisiPacijenta());
         btnOsvezi.addActionListener(e -> ucitajPacijente(true));
+        // zatvara se samo ovaj prozor, glavna forma ostaje otvorena
+        btnNazad.addActionListener(e -> dispose());
 
         // najmanja sirina se izvodi iz stvarne sirine panela za pretragu, pa
         // red sa kriterijumima uvek stane ceo

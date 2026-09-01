@@ -17,11 +17,6 @@ import util.SqlUtil;
  */
 public class Termin implements ApstraktniDomenskiObjekat {
 
-    /**
-     * Spajanja koja upit mora da sadrzi da bi metoda vratiListu mogla da napuni
-     * i stomatologa i pacijenta zajedno sa njegovom ordinacijom. Sistemske
-     * operacije ovaj deo upita prosledjuju brokeru kao deo uslova.
-     */
     public static final String SPOJEVI =
             " JOIN stomatolog ON termin.idStomatolog = stomatolog.idStomatolog"
             + " JOIN pacijent ON termin.idPacijent = pacijent.idPacijent"
@@ -40,8 +35,8 @@ public class Termin implements ApstraktniDomenskiObjekat {
     public Termin() {
     }
 
-    public Termin(int idTermin, LocalDate datum, LocalTime vreme, StatusTermina status, String napomena,
-            Stomatolog stomatolog, Pacijent pacijent) {
+    public Termin(int idTermin, LocalDate datum, LocalTime vreme, StatusTermina status,
+            String napomena, Stomatolog stomatolog, Pacijent pacijent) {
         this.idTermin = idTermin;
         this.datum = datum;
         this.vreme = vreme;

@@ -11,13 +11,11 @@ import so.OpstaSistemskaOperacija;
  * @author vukla
  */
 public class UbaciTerminSO extends OpstaSistemskaOperacija {
-
+    
     private Termin zakazani;
-
     public Termin getZakazani() {
         return zakazani;
     }
-
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Termin)) {
@@ -44,8 +42,6 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
             termin.setNapomena("");
         }
 
-        // poslovno pravilo: isti stomatolog ne moze da ima dva termina koja nisu
-        // otkazana u istom danu i u isto vreme
         String uslov = Termin.SPOJEVI
                 + " WHERE termin.idStomatolog = " + termin.getStomatolog().getIdStomatolog()
                 + " AND termin.datum = '" + termin.getDatum() + "'"

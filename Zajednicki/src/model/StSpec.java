@@ -22,7 +22,8 @@ public class StSpec implements ApstraktniDomenskiObjekat {
     public StSpec() {
     }
 
-    public StSpec(LocalDate datumSticanja, Stomatolog stomatolog, Specijalizacija specijalizacija) {
+    public StSpec(LocalDate datumSticanja, Stomatolog stomatolog,
+            Specijalizacija specijalizacija) {
         this.datumSticanja = datumSticanja;
         this.stomatolog = stomatolog;
         this.specijalizacija = specijalizacija;

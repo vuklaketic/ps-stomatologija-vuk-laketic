@@ -14,11 +14,6 @@ import java.util.List;
  */
 public class StavkaTermina implements ApstraktniDomenskiObjekat {
 
-    /**
-     * Spajanje sa uslugom, da bi stavka nosila pun podatak o usluzi.
-     * Termin se ne spaja - njega postavlja sistemska operacija koja je ucitala
-     * stavke, jer je termin vec poznat u tom trenutku.
-     */
     public static final String SPOJEVI =
             " JOIN usluga ON stavkatermina.idUsluga = usluga.idUsluga";
 

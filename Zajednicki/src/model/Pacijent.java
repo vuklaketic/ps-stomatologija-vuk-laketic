@@ -15,9 +15,6 @@ import util.SqlUtil;
  */
 public class Pacijent implements ApstraktniDomenskiObjekat {
 
-    /**
-     * Spajanje sa ordinacijom, jer pacijent uvek pripada tacno jednoj ordinaciji.
-     */
     public static final String SPOJEVI =
             " JOIN ordinacija ON pacijent.idOrdinacija = ordinacija.idOrdinacija";
 

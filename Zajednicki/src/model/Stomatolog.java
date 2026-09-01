@@ -25,7 +25,8 @@ public class Stomatolog implements ApstraktniDomenskiObjekat {
     public Stomatolog() {
     }
 
-    public Stomatolog(int idStomatolog, String ime, String prezime, String email, String korisnickoIme, String sifra, String brojLicence) {
+    public Stomatolog(int idStomatolog, String ime, String prezime, String email,
+            String korisnickoIme, String sifra, String brojLicence) {
         this.idStomatolog = idStomatolog;
         this.ime = ime;
         this.prezime = prezime;

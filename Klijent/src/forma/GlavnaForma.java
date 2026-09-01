@@ -427,16 +427,50 @@ public class GlavnaForma extends JFrame {
 
     /**
      * Puni padajucu listu pacijenata za pretragu.
+     *
+     * Poziva se pri otvaranju forme i svaki put kada se zatvori forma za rad
+     * sa pacijentima, jer je u medjuvremenu pacijent mogao da bude dodat,
+     * izmenjen ili obrisan. Zato se lista prvo prazni, pa ponovo puni, a
+     * izabrani kriterijum se zadrzava ako taj pacijent i dalje postoji.
      */
     private void ucitajPacijente() {
+        List<Pacijent> pacijenti;
         try {
-            for (Pacijent pacijent : Kontroler.getInstanca().vratiListuPacijenata()) {
-                cmbTrazeniPacijent.addItem(pacijent);
-            }
+            pacijenti = Kontroler.getInstanca().vratiListuPacijenata();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        Object prethodniIzbor = cmbTrazeniPacijent.getSelectedItem();
+
+        cmbTrazeniPacijent.removeAllItems();
+        cmbTrazeniPacijent.addItem(SVI);
+        for (Pacijent pacijent : pacijenti) {
+            cmbTrazeniPacijent.addItem(pacijent);
+        }
+
+        vratiIzborPacijenta(prethodniIzbor);
+    }
+
+    /**
+     * Vraca izbor u padajucoj listi pacijenata na onaj koji je bio izabran pre
+     * osvezavanja. Ako tog pacijenta vise nema, izbor se vraca na sve pacijente.
+     */
+    private void vratiIzborPacijenta(Object prethodniIzbor) {
+        if (prethodniIzbor instanceof Pacijent) {
+            int idPacijent = ((Pacijent) prethodniIzbor).getIdPacijent();
+            for (int i = 0; i < cmbTrazeniPacijent.getItemCount(); i++) {
+                Object stavka = cmbTrazeniPacijent.getItemAt(i);
+                if (stavka instanceof Pacijent
+                        && ((Pacijent) stavka).getIdPacijent() == idPacijent) {
+                    cmbTrazeniPacijent.setSelectedIndex(i);
+                    return;
+                }
+            }
+        }
+        cmbTrazeniPacijent.setSelectedItem(SVI);
     }
 
     /**
@@ -685,7 +719,20 @@ public class GlavnaForma extends JFrame {
      * Otvara formu za rad sa pacijentima kao zaseban prozor.
      */
     private void otvoriPacijente() {
-        new UpravljanjePacijentimaForma(this).setVisible(true);
+        UpravljanjePacijentimaForma forma = new UpravljanjePacijentimaForma(this);
+
+        // dok je forma za pacijente otvorena, pacijent je mogao da bude dodat,
+        // izmenjen ili obrisan, pa se padajuca lista u pretrazi osvezava cim se
+        // ta forma zatvori - bez toga bi novi pacijent nedostajao u kriterijumu
+        // sve do ponovnog pokretanja aplikacije
+        forma.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                ucitajPacijente();
+            }
+        });
+
+        forma.setVisible(true);
     }
 
     /**

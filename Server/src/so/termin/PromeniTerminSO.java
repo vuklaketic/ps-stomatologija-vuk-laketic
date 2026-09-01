@@ -132,6 +132,9 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
             StavkaTermina nova = pronadjiPoUsluzi(noveStavke, stara.getUsluga());
             nova.setTermin(termin);
             nova.setRb(stara.getRb());
+            // iznos je izvedena vrednost, pa se racuna ovde, a ne preuzima
+            // onakav kakav je stigao sa klijenta
+            nova.izracunajIznos();
             if (jeIzmenjena(stara, nova)) {
                 broker.izmeni(nova);
             }
@@ -143,6 +146,7 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
             if (pronadjiPoUsluzi(stareStavke, nova.getUsluga()) == null) {
                 nova.setTermin(termin);
                 nova.setRb(sledeciRb++);
+                nova.izracunajIznos();
                 broker.dodaj(nova);
             }
         }

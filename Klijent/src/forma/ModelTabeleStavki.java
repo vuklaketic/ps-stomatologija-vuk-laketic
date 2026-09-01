@@ -86,14 +86,14 @@ public class ModelTabeleStavki extends AbstractTableModel {
         StavkaTermina postojeca = pronadjiPoUsluzi(usluga);
         if (postojeca != null) {
             postojeca.setKolicina(postojeca.getKolicina() + kolicina);
-            postojeca.setIznos(postojeca.getKolicina() * postojeca.getCenaUsluge());
+            postojeca.izracunajIznos();
         } else {
             StavkaTermina stavka = new StavkaTermina();
             stavka.setRb(najveciRb() + 1);
             stavka.setUsluga(usluga);
             stavka.setKolicina(kolicina);
             stavka.setCenaUsluge(usluga.getCena());
-            stavka.setIznos(kolicina * usluga.getCena());
+            stavka.izracunajIznos();
             stavke.add(stavka);
         }
 

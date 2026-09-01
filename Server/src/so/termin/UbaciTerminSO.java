@@ -1,5 +1,6 @@
 package so.termin;
 
+import java.time.LocalDate;
 import model.StatusTermina;
 import model.StavkaTermina;
 import model.Termin;
@@ -25,6 +26,11 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
         Termin termin = (Termin) objekat;
         if (termin.getDatum() == null || termin.getVreme() == null) {
             throw new Exception("Termin mora imati datum i vreme.");
+        }
+        // termin se ne zakazuje unazad; postojecem terminu se datum ne dira,
+        // pa isto pravilo ne vazi i za izmenu
+        if (termin.getDatum().isBefore(LocalDate.now())) {
+            throw new Exception("Datum termina ne može biti u prošlosti.");
         }
         if (termin.getStomatolog() == null || termin.getStomatolog().getIdStomatolog() <= 0) {
             throw new Exception("Termin mora imati stomatologa.");
@@ -67,6 +73,9 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
         for (StavkaTermina stavka : termin.getStavke()) {
             stavka.setTermin(termin);
             stavka.setRb(redniBroj++);
+            // iznos je izvedena vrednost, pa se racuna ovde, a ne preuzima
+            // onakav kakav je stigao sa klijenta
+            stavka.izracunajIznos();
             broker.dodaj(stavka);
         }
 

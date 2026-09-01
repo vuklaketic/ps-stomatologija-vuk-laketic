@@ -608,8 +608,15 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Cita izabrani datum. Kalendar ne dozvoljava neispravan unos, pa ostaje
-     * samo provera da li je datum uopste izabran.
+     * Cita izabrani datum.
+     *
+     * Kalendar ne dozvoljava neispravan unos, pa ostaje provera da li je datum
+     * izabran i da li je u buducnosti - termin se ne zakazuje unazad. Termin
+     * koji je vec zakazan zadrzava svoj datum i kada je taj datum prosao, da bi
+     * mogao da se dopuni ili da mu se promeni status, ali se ne moze premestiti
+     * na neki drugi protekli dan.
+     *
+     * @return izabrani datum ili null ako datum nije izabran ili nije ispravan
      */
     private LocalDate procitajDatum() {
         LocalDate datum = biracDatuma.getDate();
@@ -617,8 +624,23 @@ public class NoviTerminDijalog extends JDialog {
             JOptionPane.showMessageDialog(this, "Morate izabrati datum termina.",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
             biracDatuma.openPopup();
+            return null;
+        }
+
+        if (datum.isBefore(LocalDate.now()) && !jeZadrzanPostojeciDatum(datum)) {
+            JOptionPane.showMessageDialog(this, "Datum termina ne može biti u prošlosti.",
+                    "Upozorenje", JOptionPane.WARNING_MESSAGE);
+            biracDatuma.openPopup();
+            return null;
         }
         return datum;
+    }
+
+    /**
+     * Utvrdjuje da li je u pitanju datum koji termin vec ima zapamcen.
+     */
+    private boolean jeZadrzanPostojeciDatum(LocalDate datum) {
+        return jeIzmena() && datum.equals(terminZaIzmenu.getDatum());
     }
 
     /**

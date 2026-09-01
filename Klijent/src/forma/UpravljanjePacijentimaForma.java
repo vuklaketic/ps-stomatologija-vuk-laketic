@@ -299,11 +299,20 @@ public class UpravljanjePacijentimaForma extends JFrame {
         new NoviPacijentDijalog(this, izabrani).setVisible(true);
     }
 
+    /**
+     * Brisanje pacijenta prati scenario slucaja koriscenja "Obrisi pacijenta":
+     * sistem prvo javlja da je nasao izabranog pacijenta, zatim trazi potvrdu
+     * brisanja i tek na potvrdu poziva sistemsku operaciju, o cijem ishodu
+     * takodje izvestava.
+     */
     private void obrisiPacijenta() {
         Pacijent izabrani = vratiIzabranogPacijenta();
         if (izabrani == null) {
             return;
         }
+
+        JOptionPane.showMessageDialog(this, "Sistem je našao pacijenta.",
+                "Pacijent", JOptionPane.INFORMATION_MESSAGE);
 
         int potvrda = JOptionPane.showConfirmDialog(this,
                 "Da li ste sigurni da želite da obrišete pacijenta "
@@ -322,7 +331,7 @@ public class UpravljanjePacijentimaForma extends JFrame {
         }
 
         JOptionPane.showMessageDialog(this, "Sistem je obrisao pacijenta.",
-                "Uspeh", JOptionPane.INFORMATION_MESSAGE);
+                "Pacijent", JOptionPane.INFORMATION_MESSAGE);
         ucitajPacijente();
     }
 

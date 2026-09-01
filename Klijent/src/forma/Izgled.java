@@ -52,6 +52,13 @@ public class Izgled {
         UIManager.put("TextComponent.arc", 6);
         UIManager.put("Button.margin", new InsetsUIResource(6, 14, 6, 14));
 
+        // dugmad u dijalozima idu na srpskom, bez obzira na to koji je jezik
+        // podesen na operativnom sistemu
+        UIManager.put("OptionPane.okButtonText", "U redu");
+        UIManager.put("OptionPane.yesButtonText", "Da");
+        UIManager.put("OptionPane.noButtonText", "Ne");
+        UIManager.put("OptionPane.cancelButtonText", "Odustani");
+
         // tabela: visi redovi i naizmenicno bojenje
         UIManager.put("Table.rowHeight", 26);
         UIManager.put("Table.alternateRowColor", BOJA_PARNIH_REDOVA);

@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -27,7 +28,12 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.table.TableColumnModel;
 import kontroler.Kontroler;
 import model.Pacijent;
 import model.StatusTermina;
@@ -40,6 +46,16 @@ import model.Usluga;
  *
  * Ako je u konstruktoru prosledjen termin, dijalog radi u rezimu izmene,
  * u suprotnom kreira novi termin.
+ *
+ * Termin je slozen domenski objekat: pored sopstvenih podataka (pacijent,
+ * datum, vreme, status, napomena) sadrzi i listu stavki, gde je svaka stavka
+ * jedna usluga u odredjenoj kolicini. Zato dijalog ima dva dela: gornji, u kome
+ * se unose podaci o samom terminu, i donji, u kome se sastavlja lista stavki.
+ *
+ * Stavke koje stomatolog dodaje u tabelu postoje samo u memoriji klijenta - u
+ * bazu se ne upisuje nista dok se ne pozove pamcenje termina. Tek tada ceo
+ * termin sa svojom listom stavki odlazi na server, gde jedna sistemska
+ * operacija u jednoj transakciji upisuje i termin i sve njegove stavke.
  *
  * @author vukla
  */
@@ -55,6 +71,9 @@ public class NoviTerminDijalog extends JDialog {
     /** Gornja granica sirine polja da dijalog ne bi bio prosiren dugackim nazivima. */
     private static final int MAKS_SIRINA_POLJA = 320;
 
+    /** Najveca kolicina jedne usluge u okviru jednog termina. */
+    private static final int NAJVECA_KOLICINA = 99;
+
     private final GlavnaForma roditeljskaForma;
     private final Termin terminZaIzmenu;
 
@@ -64,6 +83,12 @@ public class NoviTerminDijalog extends JDialog {
     private DatePicker biracDatuma;
     private JComboBox<LocalTime> cmbVreme;
     private JTextArea txtNapomena;
+    private JSpinner spnKolicina;
+    private JTable tabelaStavki;
+    private ModelTabeleStavki modelStavki;
+    private JLabel lblUkupno;
+    private JButton btnDodajStavku;
+    private JButton btnUkloniStavku;
     private JButton btnPotvrdi;
     private JButton btnOdustani;
 
@@ -87,11 +112,24 @@ public class NoviTerminDijalog extends JDialog {
     private void inicijalizujKomponente() {
         setTitle(jeIzmena() ? "Izmena termina" : "Novi termin");
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        setResizable(false);
+        setResizable(true);
         setLayout(new BorderLayout());
 
+        add(napraviPanelPodataka(), BorderLayout.NORTH);
+        add(napraviPanelStavki(), BorderLayout.CENTER);
+        add(napraviPanelDugmadi(), BorderLayout.SOUTH);
+
+        getRootPane().setDefaultButton(btnPotvrdi);
+    }
+
+    /**
+     * Pravi gornji deo dijaloga, sa podacima o samom terminu.
+     */
+    private JPanel napraviPanelPodataka() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 15, 20));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(15, 20, 5, 20),
+                BorderFactory.createTitledBorder("Podaci o terminu")));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
@@ -99,37 +137,130 @@ public class NoviTerminDijalog extends JDialog {
 
         cmbPacijent = new JComboBox<>();
         cmbPacijent.setRenderer(new RendererPacijenta());
-        cmbUsluga = new JComboBox<>();
-        cmbUsluga.setRenderer(new RendererUsluge());
         cmbStatus = new JComboBox<>(StatusTermina.values());
         // datum se bira iz kalendara, pa neispravan unos nije ni moguc
         biracDatuma = BiracDatuma.napravi(false);
         cmbVreme = napraviBiracVremena();
         // napomena se pise u vise redova, pa polje raste nadole, a ne u stranu
-        txtNapomena = new JTextArea(4, 15);
+        txtNapomena = new JTextArea(3, 15);
         txtNapomena.setLineWrap(true);
         txtNapomena.setWrapStyleWord(true);
 
         dodajRed(panel, gbc, 0, "Pacijent:", cmbPacijent);
         dodajRed(panel, gbc, 1, "Datum:", biracDatuma);
         dodajRed(panel, gbc, 2, "Vreme:", cmbVreme);
-        dodajRed(panel, gbc, 3, "Usluga:", cmbUsluga);
-        dodajRed(panel, gbc, 4, "Status:", cmbStatus);
-        dodajVisokRed(panel, gbc, 5, "Napomena:", new JScrollPane(txtNapomena));
+        dodajRed(panel, gbc, 3, "Status:", cmbStatus);
+        dodajVisokRed(panel, gbc, 4, "Napomena:", new JScrollPane(txtNapomena));
 
-        add(panel, BorderLayout.CENTER);
+        return panel;
+    }
 
-        JPanel panelDugmad = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        panelDugmad.setBorder(BorderFactory.createEmptyBorder(0, 20, 10, 10));
+    /**
+     * Pravi donji deo dijaloga, u kome se sastavlja lista usluga na terminu.
+     *
+     * Stomatolog bira uslugu i kolicinu i dugmetom je dodaje u tabelu, odnosno
+     * uklanja izabranu stavku iz tabele. Sve to se dogadja samo u memoriji.
+     */
+    private JPanel napraviPanelStavki() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(5, 20, 5, 20),
+                BorderFactory.createTitledBorder("Stavke termina")));
+
+        cmbUsluga = new JComboBox<>();
+        cmbUsluga.setRenderer(new RendererUsluge());
+        spnKolicina = new JSpinner(new SpinnerNumberModel(1, 1, NAJVECA_KOLICINA, 1));
+        // spiner ne dozvoljava unos slova, pa ostaje samo provera granica
+        ((JSpinner.DefaultEditor) spnKolicina.getEditor()).getTextField().setColumns(3);
+
+        btnDodajStavku = new JButton("Dodaj stavku");
+        btnUkloniStavku = new JButton("Ukloni stavku");
+
+        JPanel panelUnosa = new JPanel(new GridBagLayout());
+        panelUnosa.setBorder(BorderFactory.createEmptyBorder(5, 5, 10, 5));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 5, 0, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridy = 0;
+
+        gbc.gridx = 0;
+        panelUnosa.add(new JLabel("Usluga:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panelUnosa.add(cmbUsluga, gbc);
+
+        gbc.gridx = 2;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        panelUnosa.add(new JLabel("Količina:"), gbc);
+        gbc.gridx = 3;
+        panelUnosa.add(spnKolicina, gbc);
+
+        gbc.gridx = 4;
+        panelUnosa.add(btnDodajStavku, gbc);
+        gbc.gridx = 5;
+        panelUnosa.add(btnUkloniStavku, gbc);
+
+        panel.add(panelUnosa, BorderLayout.NORTH);
+
+        modelStavki = new ModelTabeleStavki(new ArrayList<StavkaTermina>());
+        tabelaStavki = new JTable(modelStavki);
+        tabelaStavki.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        podesiTabelu();
+
+        JScrollPane klizac = new JScrollPane(tabelaStavki);
+        klizac.setPreferredSize(new Dimension(560, 150));
+        panel.add(klizac, BorderLayout.CENTER);
+
+        // ukupan iznos termina je zbir iznosa svih stavki i menja se sa svakom
+        // dodatom, odnosno uklonjenom stavkom
+        lblUkupno = new JLabel();
+        lblUkupno.setFont(lblUkupno.getFont().deriveFont(Font.BOLD));
+        JPanel panelUkupno = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        panelUkupno.add(lblUkupno);
+        panel.add(panelUkupno, BorderLayout.SOUTH);
+        prikaziUkupanIznos();
+
+        btnDodajStavku.addActionListener(e -> dodajStavku());
+        btnUkloniStavku.addActionListener(e -> ukloniStavku());
+
+        return panel;
+    }
+
+    private JPanel napraviPanelDugmadi() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 20, 10, 10));
+
         btnPotvrdi = new JButton(jeIzmena() ? "Sačuvaj izmene" : "Zakaži termin");
         btnOdustani = new JButton("Odustani");
-        panelDugmad.add(btnPotvrdi);
-        panelDugmad.add(btnOdustani);
-        add(panelDugmad, BorderLayout.SOUTH);
+        panel.add(btnPotvrdi);
+        panel.add(btnOdustani);
 
         btnPotvrdi.addActionListener(e -> potvrdi());
         btnOdustani.addActionListener(e -> dispose());
-        getRootPane().setDefaultButton(btnPotvrdi);
+
+        return panel;
+    }
+
+    /**
+     * Podesava izgled tabele stavki: visinu redova, odnos sirina kolona i
+     * podebljano zaglavlje.
+     */
+    private void podesiTabelu() {
+        tabelaStavki.setRowHeight(26);
+        tabelaStavki.setFillsViewportHeight(true);
+        tabelaStavki.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        tabelaStavki.getTableHeader().setFont(
+                tabelaStavki.getTableHeader().getFont().deriveFont(Font.BOLD));
+        tabelaStavki.getTableHeader().setReorderingAllowed(false);
+
+        int[] sirine = {40, 240, 80, 110, 110};
+        TableColumnModel kolone = tabelaStavki.getColumnModel();
+        for (int i = 0; i < kolone.getColumnCount() && i < sirine.length; i++) {
+            kolone.getColumn(i).setPreferredWidth(sirine[i]);
+        }
     }
 
     /**
@@ -238,11 +369,35 @@ public class NoviTerminDijalog extends JDialog {
         cmbStatus.setSelectedItem(terminZaIzmenu.getStatus());
 
         izaberiPacijenta(terminZaIzmenu.getPacijent());
+        popuniStavke();
+    }
 
-        List<StavkaTermina> stavke = terminZaIzmenu.getStavke();
-        if (stavke != null && !stavke.isEmpty()) {
-            izaberiUslugu(stavke.get(0).getUsluga());
+    /**
+     * U rezimu izmene puni tabelu stavkama koje termin vec ima u bazi.
+     *
+     * Stavke se prepisuju u nove objekte, da izmene u tabeli ne bi dirale
+     * termin koji glavna forma prikazuje u svojoj listi - ako stomatolog
+     * odustane od izmene, prikaz mora da ostane onakav kakav je bio.
+     */
+    private void popuniStavke() {
+        List<StavkaTermina> postojece = terminZaIzmenu.getStavke();
+        if (postojece == null) {
+            return;
         }
+
+        List<StavkaTermina> kopije = new ArrayList<>();
+        for (StavkaTermina stavka : postojece) {
+            StavkaTermina kopija = new StavkaTermina();
+            kopija.setRb(stavka.getRb());
+            kopija.setUsluga(stavka.getUsluga());
+            kopija.setKolicina(stavka.getKolicina());
+            kopija.setCenaUsluge(stavka.getCenaUsluge());
+            kopija.setIznos(stavka.getIznos());
+            kopije.add(kopija);
+        }
+
+        modelStavki.postaviListu(kopije);
+        prikaziUkupanIznos();
     }
 
     /**
@@ -276,32 +431,77 @@ public class NoviTerminDijalog extends JDialog {
         }
     }
 
-    private void izaberiUslugu(Usluga usluga) {
+    /**
+     * Dodaje izabranu uslugu u zadatoj kolicini u tabelu stavki.
+     *
+     * Stavka se dodaje samo u memoriju - u bazu odlazi tek kada stomatolog
+     * pozove sistem da zapamti termin.
+     */
+    private void dodajStavku() {
+        Usluga usluga = (Usluga) cmbUsluga.getSelectedItem();
         if (usluga == null) {
+            JOptionPane.showMessageDialog(this, "Morate izabrati uslugu.",
+                    "Upozorenje", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        for (int i = 0; i < cmbUsluga.getItemCount(); i++) {
-            if (cmbUsluga.getItemAt(i).getIdUsluga() == usluga.getIdUsluga()) {
-                cmbUsluga.setSelectedIndex(i);
-                return;
-            }
+
+        int kolicina = procitajKolicinu();
+        if (kolicina <= 0) {
+            JOptionPane.showMessageDialog(this, "Količina mora biti veća od nule.",
+                    "Upozorenje", JOptionPane.WARNING_MESSAGE);
+            return;
         }
+
+        modelStavki.dodajStavku(usluga, kolicina);
+        prikaziUkupanIznos();
+
+        // posle dodavanja se kolicina vraca na jedan, jer je to najcesci unos
+        spnKolicina.setValue(1);
     }
 
     /**
-     * Validira unos, pravi termin i prosledjuje ga kontroleru.
+     * Uklanja stavku izabranu u tabeli.
+     */
+    private void ukloniStavku() {
+        int red = tabelaStavki.getSelectedRow();
+        if (red < 0) {
+            JOptionPane.showMessageDialog(this, "Morate izabrati stavku koju uklanjate.",
+                    "Upozorenje", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        modelStavki.ukloniStavku(tabelaStavki.convertRowIndexToModel(red));
+        prikaziUkupanIznos();
+    }
+
+    /**
+     * Cita kolicinu iz spinera. Vrednost koju je korisnik otkucao, a nije je
+     * potvrdio pritiskom na Enter, spiner jos uvek drzi u polju za unos, pa se
+     * prvo prihvata izmena, a tek onda cita vrednost.
+     */
+    private int procitajKolicinu() {
+        try {
+            spnKolicina.commitEdit();
+        } catch (java.text.ParseException ex) {
+            // otkucan je neispravan tekst - spiner vraca poslednju ispravnu
+            // vrednost, pa se u polju prikazuje ona
+            spnKolicina.setValue(spnKolicina.getValue());
+        }
+        return ((Number) spnKolicina.getValue()).intValue();
+    }
+
+    private void prikaziUkupanIznos() {
+        lblUkupno.setText(String.format("Ukupno: %.2f din", modelStavki.ukupanIznos()));
+    }
+
+    /**
+     * Validira unos, pravi termin sa svim njegovim stavkama i prosledjuje ga
+     * kontroleru.
      */
     private void potvrdi() {
         Pacijent pacijent = (Pacijent) cmbPacijent.getSelectedItem();
         if (pacijent == null) {
             JOptionPane.showMessageDialog(this, "Morate izabrati pacijenta.",
-                    "Upozorenje", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        Usluga usluga = (Usluga) cmbUsluga.getSelectedItem();
-        if (usluga == null) {
-            JOptionPane.showMessageDialog(this, "Morate izabrati uslugu.",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -314,6 +514,12 @@ public class NoviTerminDijalog extends JDialog {
         LocalTime vreme = (LocalTime) cmbVreme.getSelectedItem();
         if (vreme == null) {
             JOptionPane.showMessageDialog(this, "Morate izabrati vreme termina.",
+                    "Upozorenje", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (modelStavki.jePrazna()) {
+            JOptionPane.showMessageDialog(this, "Morate dodati bar jednu stavku termina.",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -331,12 +537,12 @@ public class NoviTerminDijalog extends JDialog {
         Termin termin = new Termin(idTermin, datum, vreme, status, napomena,
                 Kontroler.getInstanca().getUlogovaniStomatolog(), pacijent);
 
-        // konstruktor termina ne prima stavke - pravi praznu listu, pa se
-        // izabrana usluga dodaje kao stavka naknadno
-        List<StavkaTermina> stavke = new ArrayList<>();
-        int kolicina = 1;
-        stavke.add(new StavkaTermina(1, kolicina, usluga.getCena() * kolicina,
-                usluga.getCena(), termin, usluga));
+        // stavke se terminu dodaju onim redosledom kojim stoje u tabeli, a
+        // svaka zna kom terminu pripada
+        List<StavkaTermina> stavke = modelStavki.vratiStavke();
+        for (StavkaTermina stavka : stavke) {
+            stavka.setTermin(termin);
+        }
         termin.setStavke(stavke);
 
         try {
@@ -352,9 +558,8 @@ public class NoviTerminDijalog extends JDialog {
             return;
         }
 
-        JOptionPane.showMessageDialog(this,
-                jeIzmena() ? "Termin je uspešno izmenjen." : "Termin je uspešno zakazan.",
-                "Uspeh", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Sistem je zapamtio termin.",
+                "Termin", JOptionPane.INFORMATION_MESSAGE);
 
         roditeljskaForma.ucitajTermine();
         dispose();
@@ -391,7 +596,8 @@ public class NoviTerminDijalog extends JDialog {
             super.getListCellRendererComponent(lista, vrednost, indeks, izabran, fokusiran);
             if (vrednost instanceof Usluga) {
                 Usluga u = (Usluga) vrednost;
-                setText(u.getNaziv() + " (" + u.getCena() + " din, " + u.getTrajanje() + " min)");
+                setText(String.format("%s (%.2f din, %d min)",
+                        u.getNaziv(), u.getCena(), u.getTrajanje()));
             }
             return this;
         }

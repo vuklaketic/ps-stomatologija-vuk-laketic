@@ -13,6 +13,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.LocalDate;
@@ -24,10 +26,14 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumnModel;
 import kontroler.Kontroler;
@@ -76,6 +82,14 @@ public class GlavnaForma extends JFrame {
     private Pacijent kriterijumPacijent;
     private Usluga kriterijumUsluga;
 
+    private JMenuItem mniNoviTermin;
+    private JMenuItem mniIzmeniTermin;
+    private JMenuItem mniObrisiTermin;
+    private JMenuItem mniOsvezi;
+    private JMenuItem mniPacijenti;
+    private JMenuItem mniSpecijalizacija;
+    private JMenuItem mniOdjava;
+
     private JButton btnNovi;
     private JButton btnIzmeni;
     private JButton btnObrisi;
@@ -99,6 +113,8 @@ public class GlavnaForma extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setResizable(true);
         setLayout(new BorderLayout());
+
+        setJMenuBar(napraviMeni());
 
         // u zaglavlju su podaci o ulogovanom stomatologu, a odjava je u desnom
         // uglu, odvojena od akcionih dugmadi nad terminima
@@ -172,6 +188,16 @@ public class GlavnaForma extends JFrame {
         btnSpecijalizacija.addActionListener(e -> novaSpecijalizacija());
         btnOdjava.addActionListener(e -> odjaviSe());
 
+        // meni i dugmad su dva ulaza u istu funkcionalnost, pa pozivaju iste
+        // metode - nijedna radnja nije napisana dvaput
+        mniNoviTermin.addActionListener(e -> noviTermin());
+        mniIzmeniTermin.addActionListener(e -> izmeniTermin());
+        mniObrisiTermin.addActionListener(e -> obrisiTermin());
+        mniOsvezi.addActionListener(e -> ucitajTermine(true));
+        mniPacijenti.addActionListener(e -> otvoriPacijente());
+        mniSpecijalizacija.addActionListener(e -> novaSpecijalizacija());
+        mniOdjava.addActionListener(e -> odjaviSe());
+
         // najmanja sirina prozora se izvodi iz stvarne sirine panela za
         // pretragu, pa red sa kriterijumima uvek stane ceo, bez obzira na to
         // koliko je siroka slova tema iscrtala
@@ -191,6 +217,68 @@ public class GlavnaForma extends JFrame {
                 zatvoriAplikaciju();
             }
         });
+    }
+
+    /**
+     * Pravi glavni meni forme.
+     *
+     * Meni pokriva iste radnje kao dugmad na formi: dugmad su brzi pristup
+     * onome sto se najcesce koristi, a meni drzi sve radnje na jednom mestu i
+     * grupisane po celinama nad kojima se rade.
+     */
+    private JMenuBar napraviMeni() {
+        JMenuBar meni = new JMenuBar();
+
+        JMenu meniTermini = new JMenu("Termini");
+        meniTermini.setMnemonic('T');
+        mniNoviTermin = napraviStavku("Novi termin", 'N', KeyEvent.VK_N);
+        mniIzmeniTermin = napraviStavku("Izmeni termin", 'I', KeyEvent.VK_E);
+        mniObrisiTermin = napraviStavku("Obriši termin", 'O', KeyEvent.VK_D);
+        mniOsvezi = napraviStavku("Osveži", 'v', 0);
+        // osvezavanje ima uobicajenu precicu, bez modifikatora
+        mniOsvezi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+        meniTermini.add(mniNoviTermin);
+        meniTermini.add(mniIzmeniTermin);
+        meniTermini.add(mniObrisiTermin);
+        meniTermini.addSeparator();
+        meniTermini.add(mniOsvezi);
+        meni.add(meniTermini);
+
+        JMenu meniPacijenti = new JMenu("Pacijenti");
+        meniPacijenti.setMnemonic('P');
+        mniPacijenti = napraviStavku("Upravljanje pacijentima...", 'U', 0);
+        meniPacijenti.add(mniPacijenti);
+        meni.add(meniPacijenti);
+
+        JMenu meniSifarnici = new JMenu("Šifarnici");
+        meniSifarnici.setMnemonic('S');
+        mniSpecijalizacija = napraviStavku("Nova specijalizacija...", 'N', 0);
+        meniSifarnici.add(mniSpecijalizacija);
+        meni.add(meniSifarnici);
+
+        JMenu meniNalog = new JMenu("Nalog");
+        meniNalog.setMnemonic('N');
+        mniOdjava = napraviStavku("Odjavi se", 'O', 0);
+        meniNalog.add(mniOdjava);
+        meni.add(meniNalog);
+
+        return meni;
+    }
+
+    /**
+     * Pravi stavku menija sa slovom za pristup tastaturom i, ako je zadat,
+     * tasterom precice uz sistemski modifikator (Ctrl, odnosno Command).
+     *
+     * @param tasterPrecice kod tastera ili 0 kada stavka nema precicu
+     */
+    private JMenuItem napraviStavku(String naziv, char slovo, int tasterPrecice) {
+        JMenuItem stavka = new JMenuItem(naziv);
+        stavka.setMnemonic(slovo);
+        if (tasterPrecice != 0) {
+            stavka.setAccelerator(KeyStroke.getKeyStroke(tasterPrecice,
+                    Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        }
+        return stavka;
     }
 
     /**

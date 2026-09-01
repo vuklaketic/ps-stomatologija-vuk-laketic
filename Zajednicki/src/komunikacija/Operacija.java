@@ -33,5 +33,8 @@ public enum Operacija implements Serializable {
     VRATI_LISTU_STOMATOLOGA,
     VRATI_LISTU_PACIJENATA,
     VRATI_LISTU_USLUGA,
-    VRATI_LISTU_ORDINACIJA;
+    VRATI_LISTU_ORDINACIJA,
+
+    // specijalizacije jednog stomatologa
+    VRATI_SPECIJALIZACIJE_STOMATOLOGA;
 }

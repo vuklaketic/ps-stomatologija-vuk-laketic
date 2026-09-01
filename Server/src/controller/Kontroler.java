@@ -3,6 +3,7 @@ package controller;
 import java.util.List;
 import model.Ordinacija;
 import model.Pacijent;
+import model.Specijalizacija;
 import model.Stomatolog;
 import model.Termin;
 import model.Usluga;
@@ -13,6 +14,7 @@ import so.pacijent.UbaciPacijentSO;
 import so.pacijent.VratiListuPacijenataSO;
 import so.prijava.PrijavaStomatologaSO;
 import so.stomatolog.VratiListuStomatologaSO;
+import so.stomatolog.VratiSpecijalizacijeStomatologaSO;
 import so.termin.ObrisiTerminSO;
 import so.termin.PretraziTerminSO;
 import so.termin.PromeniTerminSO;
@@ -85,6 +87,12 @@ public class Kontroler {
     public synchronized List<Stomatolog> vratiListuStomatologa() throws Exception {
         VratiListuStomatologaSO so = new VratiListuStomatologaSO();
         so.izvrsiOperaciju(null);
+        return so.getLista();
+    }
+
+    public synchronized List<Specijalizacija> vratiSpecijalizacijeStomatologa(Stomatolog stomatolog) throws Exception {
+        VratiSpecijalizacijeStomatologaSO so = new VratiSpecijalizacijeStomatologaSO();
+        so.izvrsiOperaciju(stomatolog);
         return so.getLista();
     }
 

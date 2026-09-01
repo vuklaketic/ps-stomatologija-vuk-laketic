@@ -11,6 +11,7 @@ import komunikacija.Posiljalac;
 import komunikacija.Primalac;
 import komunikacija.Zahtev;
 import model.Pacijent;
+import model.Stomatolog;
 import model.Termin;
 
 /**
@@ -113,6 +114,9 @@ public class ObradaZahteva extends Thread {
 
             case VRATI_LISTU_STOMATOLOGA:
                 return kontroler.vratiListuStomatologa();
+
+            case VRATI_SPECIJALIZACIJE_STOMATOLOGA:
+                return kontroler.vratiSpecijalizacijeStomatologa((Stomatolog) parametar);
 
             case VRATI_LISTU_PACIJENATA:
                 return kontroler.vratiListuPacijenata((Pacijent) parametar);

@@ -15,6 +15,14 @@ import util.SqlUtil;
  */
 public class Specijalizacija implements ApstraktniDomenskiObjekat {
 
+    /**
+     * Spajanje sa veznom tabelom, za citanje specijalizacija jednog
+     * stomatologa. Ne koristi se u ostalim upitima nad specijalizacijama,
+     * jer im vezna tabela nije potrebna.
+     */
+    public static final String SPOJ_SA_STOMATOLOGOM =
+            " JOIN stspec ON stspec.idSpecijalizacija = specijalizacija.idSpecijalizacija";
+
     private int idSpecijalizacija;
     private String naziv;
 

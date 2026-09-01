@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -31,6 +32,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumnModel;
 import kontroler.Kontroler;
 import model.Pacijent;
+import model.Specijalizacija;
 import model.StatusTermina;
 import model.Stomatolog;
 import model.Termin;
@@ -49,6 +51,8 @@ public class GlavnaForma extends JFrame {
     private static final int NAJMANJA_SIRINA_POLJA = 45;
 
     private final Stomatolog ulogovaniStomatolog;
+
+    private JLabel lblSpecijalizacije;
 
     private JTable tabelaTermina;
     private ModelTabeleTermin modelTabele;
@@ -78,6 +82,7 @@ public class GlavnaForma extends JFrame {
     public GlavnaForma() {
         this.ulogovaniStomatolog = Kontroler.getInstanca().getUlogovaniStomatolog();
         inicijalizujKomponente();
+        ucitajSpecijalizacije();
         ucitajPacijente();
         ucitajTermine();
     }
@@ -94,10 +99,24 @@ public class GlavnaForma extends JFrame {
         JPanel panelZaglavlje = new JPanel(new BorderLayout());
         panelZaglavlje.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
+        JPanel panelUlogovani = new JPanel();
+        panelUlogovani.setLayout(new BoxLayout(panelUlogovani, BoxLayout.Y_AXIS));
+        panelUlogovani.setOpaque(false);
+
         JLabel lblUlogovani = new JLabel("Ulogovani stomatolog: "
                 + ulogovaniStomatolog.getIme() + " " + ulogovaniStomatolog.getPrezime());
         lblUlogovani.setFont(lblUlogovani.getFont().deriveFont(Font.BOLD));
-        panelZaglavlje.add(lblUlogovani, BorderLayout.WEST);
+        lblUlogovani.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panelUlogovani.add(lblUlogovani);
+
+        // linija sa specijalizacijama se popunjava tek posle citanja sa servera,
+        // pa za stomatologa koji nema nijednu ostaje sakrivena
+        lblSpecijalizacije = new JLabel();
+        lblSpecijalizacije.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblSpecijalizacije.setVisible(false);
+        panelUlogovani.add(lblSpecijalizacije);
+
+        panelZaglavlje.add(panelUlogovani, BorderLayout.WEST);
 
         // desno u zaglavlju stoje prelazak na pacijente i odjava
         JPanel panelZaglavljeDesno = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -251,6 +270,29 @@ public class GlavnaForma extends JFrame {
         gbc.fill = GridBagConstraints.NONE;
         panel.add(komponenta, gbc);
         return kolona + 1;
+    }
+
+    /**
+     * Prikazuje specijalizacije ulogovanog stomatologa u zaglavlju. Ako ih
+     * stomatolog nema, linija se ne prikazuje, da zaglavlje ne bi nosilo
+     * podatak koji nista ne govori.
+     */
+    private void ucitajSpecijalizacije() {
+        try {
+            List<String> nazivi = new ArrayList<>();
+            for (Specijalizacija specijalizacija
+                    : Kontroler.getInstanca().vratiSpecijalizacijeUlogovanog()) {
+                nazivi.add(specijalizacija.getNaziv());
+            }
+
+            if (!nazivi.isEmpty()) {
+                lblSpecijalizacije.setText("Specijalizacije: " + String.join(", ", nazivi));
+                lblSpecijalizacije.setVisible(true);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Greška", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**

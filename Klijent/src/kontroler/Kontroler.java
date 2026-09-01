@@ -13,6 +13,7 @@ import komunikacija.Operacija;
 import komunikacija.TipOdgovora;
 import model.Ordinacija;
 import model.Pacijent;
+import model.Specijalizacija;
 import model.StatusTermina;
 import model.Stomatolog;
 import model.Termin;
@@ -116,6 +117,21 @@ public class Kontroler {
         kriterijum.setStatus(status);
         kriterijum.setPacijent(pacijent);
         return vratiListuTermina(kriterijum);
+    }
+
+    /**
+     * Vraca specijalizacije ulogovanog stomatologa, sortirane po nazivu.
+     *
+     * @return lista specijalizacija, prazna ako stomatolog nema nijednu
+     * @throws Exception ako niko nije prijavljen ili ako citanje ne uspe
+     */
+    @SuppressWarnings("unchecked")
+    public List<Specijalizacija> vratiSpecijalizacijeUlogovanog() throws Exception {
+        if (ulogovaniStomatolog == null) {
+            throw new Exception("Nijedan stomatolog nije prijavljen na sistem.");
+        }
+        return (List<Specijalizacija>) posalji(Operacija.VRATI_SPECIJALIZACIJE_STOMATOLOGA,
+                ulogovaniStomatolog);
     }
 
     @SuppressWarnings("unchecked")

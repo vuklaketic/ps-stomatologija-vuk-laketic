@@ -152,7 +152,7 @@ public class ObradaZahteva extends Thread {
                 return null;
 
             default:
-                throw new Exception("Server ne podrzava operaciju " + operacija + ".");
+                throw new Exception("Server ne podržava operaciju " + operacija + ".");
         }
     }
 

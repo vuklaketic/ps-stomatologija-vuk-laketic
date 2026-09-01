@@ -28,7 +28,7 @@ public class VratiListuPacijenataSO extends OpstaSistemskaOperacija {
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat != null && !(objekat instanceof Pacijent)) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
     }
 
@@ -75,6 +75,6 @@ public class VratiListuPacijenataSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da nadje pacijente po zadatim kriterijumima.";
+        return "Sistem ne može da nađe pacijente po zadatim kriterijumima.";
     }
 }

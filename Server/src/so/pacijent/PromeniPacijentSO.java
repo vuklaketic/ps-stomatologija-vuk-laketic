@@ -20,12 +20,12 @@ public class PromeniPacijentSO extends OpstaSistemskaOperacija {
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Pacijent)) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
 
         Pacijent pacijent = (Pacijent) objekat;
         if (pacijent.getIdPacijent() <= 0) {
-            throw new Exception("Nije prosledjen identifikator pacijenta.");
+            throw new Exception("Nije prosleđen identifikator pacijenta.");
         }
         if (pacijent.getIme() == null || pacijent.getIme().trim().isEmpty()) {
             throw new Exception("Pacijent mora imati ime.");
@@ -38,7 +38,7 @@ public class PromeniPacijentSO extends OpstaSistemskaOperacija {
         }
         if (pacijent.getBrojKnjizice() == null
                 || pacijent.getBrojKnjizice().trim().length() != UbaciPacijentSO.DUZINA_BROJA_KNJIZICE) {
-            throw new Exception("Broj knjizice mora imati tacno "
+            throw new Exception("Broj knjižice mora imati tačno "
                     + UbaciPacijentSO.DUZINA_BROJA_KNJIZICE + " znakova.");
         }
         if (pacijent.getOrdinacija() == null || pacijent.getOrdinacija().getIdOrdinacija() <= 0) {
@@ -59,7 +59,7 @@ public class PromeniPacijentSO extends OpstaSistemskaOperacija {
             broker.izmeni(pacijent);
         } catch (SQLIntegrityConstraintViolationException ex) {
             // broj knjizice je u bazi jedinstven
-            throw new Exception("Drugi pacijent vec ima broj knjizice "
+            throw new Exception("Drugi pacijent već ima broj knjižice "
                     + pacijent.getBrojKnjizice() + ".");
         }
 
@@ -68,6 +68,6 @@ public class PromeniPacijentSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da zapamti pacijenta.";
+        return "Sistem ne može da zapamti pacijenta.";
     }
 }

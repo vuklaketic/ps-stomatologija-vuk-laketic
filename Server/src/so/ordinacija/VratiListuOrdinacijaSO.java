@@ -34,6 +34,6 @@ public class VratiListuOrdinacijaSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da ucita listu ordinacija.";
+        return "Sistem ne može da učita listu ordinacija.";
     }
 }

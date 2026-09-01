@@ -43,12 +43,12 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Termin)) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
 
         Termin termin = (Termin) objekat;
         if (termin.getIdTermin() <= 0) {
-            throw new Exception("Nije prosledjen identifikator termina.");
+            throw new Exception("Nije prosleđen identifikator termina.");
         }
         if (termin.getDatum() == null || termin.getVreme() == null) {
             throw new Exception("Termin mora imati datum i vreme.");
@@ -70,10 +70,10 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
                 throw new Exception("Svaka stavka termina mora imati uslugu.");
             }
             if (stavka.getKolicina() <= 0) {
-                throw new Exception("Kolicina stavke mora biti veca od nule.");
+                throw new Exception("Količina stavke mora biti veća od nule.");
             }
             if (videneUsluge.contains(stavka.getUsluga().getIdUsluga())) {
-                throw new Exception("Termin ne moze da sadrzi dve stavke sa istom uslugom.");
+                throw new Exception("Termin ne može da sadrži dve stavke sa istom uslugom.");
             }
             videneUsluge.add(stavka.getUsluga().getIdUsluga());
         }
@@ -99,7 +99,7 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
                 + " AND termin.idTermin <> " + termin.getIdTermin();
 
         if (!broker.vratiPoUpitu(new Termin(), uslovZauzetost).isEmpty()) {
-            throw new Exception("Stomatolog vec ima zakazan termin "
+            throw new Exception("Stomatolog već ima zakazan termin "
                     + termin.getDatum() + " u " + termin.getVreme() + ".");
         }
     }
@@ -205,6 +205,6 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da zapamti termin.";
+        return "Sistem ne može da zapamti termin.";
     }
 }

@@ -35,6 +35,6 @@ public class VratiListuStomatologaSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da ucita listu stomatologa.";
+        return "Sistem ne može da učita listu stomatologa.";
     }
 }

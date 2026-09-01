@@ -433,7 +433,7 @@ public class GlavnaForma extends JFrame {
             return;
         }
 
-        JOptionPane.showMessageDialog(this, "Termin je uspešno obrisan.",
+        JOptionPane.showMessageDialog(this, "Sistem je obrisao termin.",
                 "Uspeh", JOptionPane.INFORMATION_MESSAGE);
         ucitajTermine();
     }

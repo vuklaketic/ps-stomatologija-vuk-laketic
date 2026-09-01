@@ -17,22 +17,22 @@ import so.OpstaSistemskaOperacija;
 public class ObrisiPacijentSO extends OpstaSistemskaOperacija {
 
     private static final String PORUKA_IMA_TERMINE =
-            "Sistem ne moze da obrise pacijenta - pacijent ima zakazane termine.";
+            "Sistem ne može da obriše pacijenta - pacijent ima zakazane termine.";
 
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Pacijent)) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
 
         Pacijent pacijent = (Pacijent) objekat;
         if (pacijent.getIdPacijent() <= 0) {
-            throw new Exception("Nije prosledjen identifikator pacijenta.");
+            throw new Exception("Nije prosleđen identifikator pacijenta.");
         }
 
         String uslovPostoji = Pacijent.SPOJEVI + " WHERE pacijent.idPacijent = " + pacijent.getIdPacijent();
         if (broker.vratiObjekat(new Pacijent(), uslovPostoji) == null) {
-            throw new Exception("Pacijent koji se brise ne postoji u bazi.");
+            throw new Exception("Pacijent koji se briše ne postoji u bazi.");
         }
 
         String uslovTermini = Termin.SPOJEVI + " WHERE termin.idPacijent = " + pacijent.getIdPacijent();
@@ -55,6 +55,6 @@ public class ObrisiPacijentSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da obrise pacijenta.";
+        return "Sistem ne može da obriše pacijenta.";
     }
 }

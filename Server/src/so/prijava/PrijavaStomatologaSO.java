@@ -20,14 +20,14 @@ public class PrijavaStomatologaSO extends OpstaSistemskaOperacija {
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Object[])) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
         Object[] podaci = (Object[]) objekat;
         if (podaci.length != 2 || !(podaci[0] instanceof String) || !(podaci[1] instanceof String)) {
-            throw new Exception("Nisu prosledjeni korisnicko ime i sifra.");
+            throw new Exception("Nisu prosleđeni korisničko ime i šifra.");
         }
         if (((String) podaci[0]).trim().isEmpty() || ((String) podaci[1]).isEmpty()) {
-            throw new Exception("Korisnicko ime i sifra ne smeju biti prazni.");
+            throw new Exception("Korisničko ime i šifra ne smeju biti prazni.");
         }
     }
 
@@ -43,12 +43,12 @@ public class PrijavaStomatologaSO extends OpstaSistemskaOperacija {
         ulogovani = (Stomatolog) broker.vratiObjekat(new Stomatolog(), uslov);
 
         if (ulogovani == null) {
-            throw new Exception("Pogresno korisnicko ime ili sifra.");
+            throw new Exception("Korisničko ime i šifra nisu ispravni.");
         }
     }
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da proveri podatke za prijavu.";
+        return "Sistem ne može da proveri podatke za prijavu.";
     }
 }

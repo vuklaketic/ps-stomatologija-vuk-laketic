@@ -27,10 +27,10 @@ public class VratiSpecijalizacijeStomatologaSO extends OpstaSistemskaOperacija {
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Stomatolog)) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
         if (((Stomatolog) objekat).getIdStomatolog() <= 0) {
-            throw new Exception("Nije prosledjen stomatolog sa identifikatorom.");
+            throw new Exception("Nije prosleđen stomatolog sa identifikatorom.");
         }
     }
 
@@ -50,6 +50,6 @@ public class VratiSpecijalizacijeStomatologaSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da ucita specijalizacije stomatologa.";
+        return "Sistem ne može da učita specijalizacije stomatologa.";
     }
 }

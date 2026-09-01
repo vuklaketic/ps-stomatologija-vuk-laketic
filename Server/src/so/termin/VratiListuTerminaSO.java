@@ -29,7 +29,7 @@ public class VratiListuTerminaSO extends OpstaSistemskaOperacija {
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Termin)) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
     }
 
@@ -104,6 +104,6 @@ public class VratiListuTerminaSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da nadje termine po zadatim kriterijumima.";
+        return "Sistem ne može da nađe termine po zadatim kriterijumima.";
     }
 }

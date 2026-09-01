@@ -19,7 +19,7 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Termin)) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
 
         Termin termin = (Termin) objekat;
@@ -49,7 +49,7 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
                 + " AND termin.status <> '" + StatusTermina.OTKAZAN.name() + "'";
 
         if (!broker.vratiPoUpitu(new Termin(), uslov).isEmpty()) {
-            throw new Exception("Stomatolog vec ima zakazan termin "
+            throw new Exception("Stomatolog već ima zakazan termin "
                     + termin.getDatum() + " u " + termin.getVreme() + ".");
         }
     }
@@ -75,6 +75,6 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da zapamti termin.";
+        return "Sistem ne može da zapamti termin.";
     }
 }

@@ -23,7 +23,7 @@ public class UbaciPacijentSO extends OpstaSistemskaOperacija {
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Pacijent)) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
 
         Pacijent pacijent = (Pacijent) objekat;
@@ -38,7 +38,7 @@ public class UbaciPacijentSO extends OpstaSistemskaOperacija {
         }
         if (pacijent.getBrojKnjizice() == null
                 || pacijent.getBrojKnjizice().trim().length() != DUZINA_BROJA_KNJIZICE) {
-            throw new Exception("Broj knjizice mora imati tacno "
+            throw new Exception("Broj knjižice mora imati tačno "
                     + DUZINA_BROJA_KNJIZICE + " znakova.");
         }
         if (pacijent.getOrdinacija() == null || pacijent.getOrdinacija().getIdOrdinacija() <= 0) {
@@ -55,8 +55,8 @@ public class UbaciPacijentSO extends OpstaSistemskaOperacija {
             pacijent.setIdPacijent(idPacijent);
         } catch (SQLIntegrityConstraintViolationException ex) {
             // broj knjizice je u bazi jedinstven
-            throw new Exception("Pacijent sa brojem knjizice "
-                    + pacijent.getBrojKnjizice() + " vec postoji.");
+            throw new Exception("Pacijent sa brojem knjižice "
+                    + pacijent.getBrojKnjizice() + " već postoji.");
         }
 
         zapamceni = pacijent;
@@ -64,6 +64,6 @@ public class UbaciPacijentSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da zapamti pacijenta.";
+        return "Sistem ne može da zapamti pacijenta.";
     }
 }

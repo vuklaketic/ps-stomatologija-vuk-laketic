@@ -23,10 +23,10 @@ public class PretraziTerminSO extends OpstaSistemskaOperacija {
     @Override
     protected void preduslovi(Object objekat) throws Exception {
         if (objekat == null || !(objekat instanceof Termin)) {
-            throw new Exception("Nije prosledjen parametar odgovarajuceg tipa.");
+            throw new Exception("Nije prosleđen parametar odgovarajućeg tipa.");
         }
         if (((Termin) objekat).getIdTermin() <= 0) {
-            throw new Exception("Nije prosledjen identifikator termina.");
+            throw new Exception("Nije prosleđen identifikator termina.");
         }
     }
 
@@ -56,6 +56,6 @@ public class PretraziTerminSO extends OpstaSistemskaOperacija {
 
     @Override
     protected String porukaONeuspehu() {
-        return "Sistem ne moze da nadje termin.";
+        return "Sistem ne može da nađe termin.";
     }
 }

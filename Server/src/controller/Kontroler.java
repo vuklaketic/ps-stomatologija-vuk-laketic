@@ -13,6 +13,7 @@ import so.pacijent.PromeniPacijentSO;
 import so.pacijent.UbaciPacijentSO;
 import so.pacijent.VratiListuPacijenataSO;
 import so.prijava.PrijavaStomatologaSO;
+import so.specijalizacija.UbaciSpecijalizacijuSO;
 import so.stomatolog.VratiListuStomatologaSO;
 import so.stomatolog.VratiSpecijalizacijeStomatologaSO;
 import so.termin.ObrisiTerminSO;
@@ -121,6 +122,12 @@ public class Kontroler {
     public synchronized void obrisiPacijenta(Pacijent pacijent) throws Exception {
         ObrisiPacijentSO so = new ObrisiPacijentSO();
         so.izvrsiOperaciju(pacijent);
+    }
+
+    public synchronized Specijalizacija ubaciSpecijalizaciju(Specijalizacija specijalizacija) throws Exception {
+        UbaciSpecijalizacijuSO so = new UbaciSpecijalizacijuSO();
+        so.izvrsiOperaciju(specijalizacija);
+        return so.getZapamcena();
     }
 
     public synchronized List<Ordinacija> vratiListuOrdinacija() throws Exception {

@@ -23,6 +23,9 @@ public enum Operacija implements Serializable {
     OBRISI_TERMIN,
     PRETRAZI_TERMIN,
 
+    // operacije nad specijalizacijom
+    UBACI_SPECIJALIZACIJA,
+
     // operacije nad pacijentom
     UBACI_PACIJENT,
     PROMENI_PACIJENT,

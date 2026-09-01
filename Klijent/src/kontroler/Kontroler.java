@@ -134,6 +134,16 @@ public class Kontroler {
                 ulogovaniStomatolog);
     }
 
+    /**
+     * Salje serveru novu specijalizaciju na cuvanje.
+     *
+     * @param specijalizacija specijalizacija koja se pamti
+     * @throws Exception ako podaci nisu ispravni ili ako upis ne uspe
+     */
+    public void ubaciSpecijalizaciju(Specijalizacija specijalizacija) throws Exception {
+        posalji(Operacija.UBACI_SPECIJALIZACIJA, specijalizacija);
+    }
+
     @SuppressWarnings("unchecked")
     public List<Pacijent> vratiListuPacijenata() throws Exception {
         return (List<Pacijent>) posalji(Operacija.VRATI_LISTU_PACIJENATA, null);

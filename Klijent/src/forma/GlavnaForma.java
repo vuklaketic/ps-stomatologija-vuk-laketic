@@ -77,6 +77,7 @@ public class GlavnaForma extends JFrame {
     private JButton btnObrisi;
     private JButton btnOsvezi;
     private JButton btnPacijenti;
+    private JButton btnSpecijalizacija;
     private JButton btnOdjava;
 
     public GlavnaForma() {
@@ -121,8 +122,10 @@ public class GlavnaForma extends JFrame {
         // desno u zaglavlju stoje prelazak na pacijente i odjava
         JPanel panelZaglavljeDesno = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         btnPacijenti = new JButton("Pacijenti");
+        btnSpecijalizacija = new JButton("Nova specijalizacija");
         btnOdjava = new JButton("Odjavi se");
         panelZaglavljeDesno.add(btnPacijenti);
+        panelZaglavljeDesno.add(btnSpecijalizacija);
         panelZaglavljeDesno.add(btnOdjava);
         panelZaglavlje.add(panelZaglavljeDesno, BorderLayout.EAST);
 
@@ -161,6 +164,7 @@ public class GlavnaForma extends JFrame {
         btnObrisi.addActionListener(e -> obrisiTermin());
         btnOsvezi.addActionListener(e -> ucitajTermine(true));
         btnPacijenti.addActionListener(e -> otvoriPacijente());
+        btnSpecijalizacija.addActionListener(e -> novaSpecijalizacija());
         btnOdjava.addActionListener(e -> odjaviSe());
 
         // najmanja sirina prozora se izvodi iz stvarne sirine panela za
@@ -400,6 +404,13 @@ public class GlavnaForma extends JFrame {
                             : "Sistem je našao termine po zadatim kriterijumima.",
                     "Pretraga termina", JOptionPane.INFORMATION_MESSAGE);
         }
+    }
+
+    /**
+     * Otvara formu za rad sa specijalizacijom.
+     */
+    private void novaSpecijalizacija() {
+        new NovaSpecijalizacijaDijalog(this).setVisible(true);
     }
 
     private void noviTermin() {

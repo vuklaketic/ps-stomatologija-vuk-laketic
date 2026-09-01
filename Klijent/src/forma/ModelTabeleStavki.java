@@ -13,9 +13,10 @@ import model.Usluga;
  * stomatolog ne pozove sistem da zapamti termin. Tek tada ceo termin, zajedno
  * sa svojom listom stavki, odlazi na server i upisuje se u jednoj transakciji.
  *
- * Redni brojevi stavki se dodeljuju po redosledu u tabeli i odrzavaju se posle
- * svakog dodavanja i uklanjanja, pa termin uvek ima stavke numerisane od 1
- * naviste, bez rupa.
+ * Redni broj se dodeljuje samo novoj stavci, i to kao prvi slobodan broj u
+ * tabeli. Stavke koje su vec zapamcene zadrzavaju svoj redni broj, jer je on
+ * deo primarnog kljuca stavke - kada bi se stavke prenumerisale posle svakog
+ * uklanjanja, izmena jedne stavke bi u bazi menjala i sve ostale.
  *
  * @author vukla
  */
@@ -29,7 +30,6 @@ public class ModelTabeleStavki extends AbstractTableModel {
 
     public ModelTabeleStavki(List<StavkaTermina> stavke) {
         this.stavke = stavke != null ? stavke : new ArrayList<StavkaTermina>();
-        prenumerisi();
     }
 
     @Override
@@ -89,6 +89,7 @@ public class ModelTabeleStavki extends AbstractTableModel {
             postojeca.setIznos(postojeca.getKolicina() * postojeca.getCenaUsluge());
         } else {
             StavkaTermina stavka = new StavkaTermina();
+            stavka.setRb(najveciRb() + 1);
             stavka.setUsluga(usluga);
             stavka.setKolicina(kolicina);
             stavka.setCenaUsluge(usluga.getCena());
@@ -96,7 +97,6 @@ public class ModelTabeleStavki extends AbstractTableModel {
             stavke.add(stavka);
         }
 
-        prenumerisi();
         fireTableDataChanged();
     }
 
@@ -105,7 +105,6 @@ public class ModelTabeleStavki extends AbstractTableModel {
      */
     public void ukloniStavku(int red) {
         stavke.remove(red);
-        prenumerisi();
         fireTableDataChanged();
     }
 
@@ -114,7 +113,6 @@ public class ModelTabeleStavki extends AbstractTableModel {
      */
     public void postaviListu(List<StavkaTermina> stavke) {
         this.stavke = stavke != null ? stavke : new ArrayList<StavkaTermina>();
-        prenumerisi();
         fireTableDataChanged();
     }
 
@@ -148,13 +146,15 @@ public class ModelTabeleStavki extends AbstractTableModel {
     }
 
     /**
-     * Dodeljuje stavkama redne brojeve od 1 naviste, po redosledu u tabeli.
+     * Vraca najveci redni broj u tabeli, odnosno nulu za praznu tabelu, pa prva
+     * stavka dobija redni broj jedan.
      */
-    private void prenumerisi() {
-        int redniBroj = 1;
+    private int najveciRb() {
+        int najveci = 0;
         for (StavkaTermina stavka : stavke) {
-            stavka.setRb(redniBroj++);
+            najveci = Math.max(najveci, stavka.getRb());
         }
+        return najveci;
     }
 
     private StavkaTermina pronadjiPoUsluzi(Usluga usluga) {

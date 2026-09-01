@@ -61,6 +61,8 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
         int idTermin = broker.dodaj(termin);
         termin.setIdTermin(idTermin);
 
+        // termin se tek upisuje, pa njegove stavke dobijaju redne brojeve od
+        // jedan naviste, redosledom kojim su unete na formi
         int redniBroj = 1;
         for (StavkaTermina stavka : termin.getStavke()) {
             stavka.setTermin(termin);

@@ -15,6 +15,7 @@ import model.Ordinacija;
 import model.Pacijent;
 import model.Specijalizacija;
 import model.StatusTermina;
+import model.StavkaTermina;
 import model.Stomatolog;
 import model.Termin;
 import model.Usluga;
@@ -91,7 +92,7 @@ public class Kontroler {
      * Vraca sve termine ulogovanog stomatologa.
      */
     public List<Termin> vratiTermineUlogovanog() throws Exception {
-        return pretraziTermineUlogovanog(null, null, null);
+        return pretraziTermineUlogovanog(null, null, null, null);
     }
 
     /**
@@ -104,9 +105,10 @@ public class Kontroler {
      * @param datum dan za koji se traze termini, ili null za sve dane
      * @param status trazeni status termina, ili null za sve statuse
      * @param pacijent pacijent cji se termini traze, ili null za sve pacijente
+     * @param usluga usluga koja mora da se nadje na terminu, ili null za sve usluge
      */
     public List<Termin> pretraziTermineUlogovanog(LocalDate datum, StatusTermina status,
-            Pacijent pacijent) throws Exception {
+            Pacijent pacijent, Usluga usluga) throws Exception {
         if (ulogovaniStomatolog == null) {
             throw new Exception("Nijedan stomatolog nije prijavljen na sistem.");
         }
@@ -116,6 +118,14 @@ public class Kontroler {
         kriterijum.setDatum(datum);
         kriterijum.setStatus(status);
         kriterijum.setPacijent(pacijent);
+
+        // usluga se prosledjuje kao stavka kriterijuma, jer je usluga sa
+        // terminom povezana upravo preko stavke
+        if (usluga != null) {
+            StavkaTermina stavka = new StavkaTermina();
+            stavka.setUsluga(usluga);
+            kriterijum.getStavke().add(stavka);
+        }
         return vratiListuTermina(kriterijum);
     }
 
@@ -167,6 +177,18 @@ public class Kontroler {
     @SuppressWarnings("unchecked")
     public List<Pacijent> vratiListuPacijenata(Pacijent kriterijum) throws Exception {
         return (List<Pacijent>) posalji(Operacija.VRATI_LISTU_PACIJENATA, kriterijum);
+    }
+
+    /**
+     * Pronalazi pacijenta sa zadatim identifikatorom.
+     *
+     * @return pronadjeni pacijent ili null ako pacijenta sa tim
+     *         identifikatorom nema
+     */
+    public Pacijent pretraziPacijenta(int idPacijent) throws Exception {
+        Pacijent kriterijum = new Pacijent();
+        kriterijum.setIdPacijent(idPacijent);
+        return (Pacijent) posalji(Operacija.PRETRAZI_PACIJENT, kriterijum);
     }
 
     public void ubaciPacijenta(Pacijent pacijent) throws Exception {

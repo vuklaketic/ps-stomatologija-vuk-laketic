@@ -9,6 +9,7 @@ import model.Termin;
 import model.Usluga;
 import so.ordinacija.VratiListuOrdinacijaSO;
 import so.pacijent.ObrisiPacijentSO;
+import so.pacijent.PretraziPacijentSO;
 import so.pacijent.PromeniPacijentSO;
 import so.pacijent.UbaciPacijentSO;
 import so.pacijent.VratiListuPacijenataSO;
@@ -105,6 +106,12 @@ public class Kontroler {
         VratiListuPacijenataSO so = new VratiListuPacijenataSO();
         so.izvrsiOperaciju(kriterijum);
         return so.getLista();
+    }
+
+    public synchronized Pacijent pretraziPacijenta(Pacijent kriterijum) throws Exception {
+        PretraziPacijentSO so = new PretraziPacijentSO();
+        so.izvrsiOperaciju(kriterijum);
+        return so.getPronadjeni();
     }
 
     public synchronized Pacijent ubaciPacijenta(Pacijent pacijent) throws Exception {

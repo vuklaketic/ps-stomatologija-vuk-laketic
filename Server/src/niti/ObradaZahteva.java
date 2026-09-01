@@ -105,8 +105,7 @@ public class ObradaZahteva extends Thread {
         Kontroler kontroler = Kontroler.getInstanca();
 
         switch (operacija) {
-            case PRIJAVA_STOMATOLOG:
-            case LOGIN: {
+            case PRIJAVA_STOMATOLOG: {
                 Object[] podaci = (Object[]) parametar;
                 return kontroler.prijaviStomatologa((String) podaci[0], (String) podaci[1]);
             }
@@ -128,6 +127,9 @@ public class ObradaZahteva extends Thread {
             case UBACI_SPECIJALIZACIJA:
                 return kontroler.ubaciSpecijalizaciju((Specijalizacija) parametar);
 
+            case PRETRAZI_PACIJENT:
+                return kontroler.pretraziPacijenta((Pacijent) parametar);
+
             case UBACI_PACIJENT:
                 return kontroler.ubaciPacijenta((Pacijent) parametar);
 
@@ -144,7 +146,6 @@ public class ObradaZahteva extends Thread {
             case PRETRAZI_TERMIN:
                 return kontroler.pretraziTermin((Termin) parametar);
 
-            case KREIRAJ_TERMIN:
             case UBACI_TERMIN:
                 return kontroler.ubaciTermin((Termin) parametar);
 

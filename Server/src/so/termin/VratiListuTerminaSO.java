@@ -5,6 +5,7 @@ import java.util.List;
 import model.ApstraktniDomenskiObjekat;
 import model.StavkaTermina;
 import model.Termin;
+import model.Usluga;
 import so.OpstaSistemskaOperacija;
 
 /**
@@ -13,8 +14,9 @@ import so.OpstaSistemskaOperacija;
  * Kao parametar dobija termin koji sluzi kao kriterijum pretrage. Svako
  * popunjeno polje kriterijuma sazuje pretragu, a polja koja su ostala prazna
  * se ne uzimaju u obzir: postavljen stomatolog ogranicava pretragu na njegove
- * termine, datum na jedan dan, status na jedno stanje, a pacijent na termine
- * tog pacijenta. Ako nijedno polje nije popunjeno, vracaju se svi termini.
+ * termine, datum na jedan dan, status na jedno stanje, pacijent na termine
+ * tog pacijenta, a usluga u stavci na termine na kojima je ta usluga
+ * zakazana. Ako nijedno polje nije popunjeno, vracaju se svi termini.
  *
  * @author vukla
  */
@@ -77,10 +79,40 @@ public class VratiListuTerminaSO extends OpstaSistemskaOperacija {
             uslovi.add("termin.idPacijent = " + kriterijum.getPacijent().getIdPacijent());
         }
 
+        // usluga se trazi u stavkama termina, jer termin nije direktno vezan za
+        // uslugu; podupit proverava postojanje stavke sa tom uslugom, pa termin
+        // sa vise stavki ostaje jedan red u rezultatu
+        Usluga usluga = vratiUsluguKriterijuma(kriterijum);
+        if (usluga != null) {
+            uslovi.add("EXISTS (SELECT 1 FROM stavkatermina"
+                    + " WHERE stavkatermina.idTermin = termin.idTermin"
+                    + " AND stavkatermina.idUsluga = " + usluga.getIdUsluga() + ")");
+        }
+
         if (uslovi.isEmpty()) {
             return "";
         }
         return " WHERE " + String.join(" AND ", uslovi);
+    }
+
+    /**
+     * Vraca uslugu po kojoj se pretrazuje, ako je zadata.
+     *
+     * Klijent uslugu salje kao stavku kriterijuma, jer je usluga sa terminom
+     * povezana upravo preko stavke.
+     *
+     * @return usluga iz prve stavke kriterijuma ili null ako usluga nije zadata
+     */
+    private Usluga vratiUsluguKriterijuma(Termin kriterijum) {
+        if (kriterijum.getStavke() == null) {
+            return null;
+        }
+        for (StavkaTermina stavka : kriterijum.getStavke()) {
+            if (stavka.getUsluga() != null && stavka.getUsluga().getIdUsluga() > 0) {
+                return stavka.getUsluga();
+            }
+        }
+        return null;
     }
 
     /**

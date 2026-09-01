@@ -293,12 +293,52 @@ public class UpravljanjePacijentimaForma extends JFrame {
         new NoviPacijentDijalog(this, null).setVisible(true);
     }
 
+    /**
+     * Otvara dijalog za izmenu izabranog pacijenta.
+     *
+     * Scenario razlikuje pretragu liste pacijenata od trazenja jednog,
+     * izabranog pacijenta, pa se i ovde pacijent ponovo trazi na serveru, a
+     * tek onda otvara dijalog.
+     */
     private void izmeniPacijenta() {
         Pacijent izabrani = vratiIzabranogPacijenta();
         if (izabrani == null) {
             return;
         }
-        new NoviPacijentDijalog(this, izabrani).setVisible(true);
+
+        Pacijent pronadjeni = nadjiPacijenta(izabrani);
+        if (pronadjeni == null) {
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this, "Sistem je našao pacijenta.",
+                "Pacijent", JOptionPane.INFORMATION_MESSAGE);
+
+        new NoviPacijentDijalog(this, pronadjeni).setVisible(true);
+    }
+
+    /**
+     * Trazi izabranog pacijenta na serveru.
+     *
+     * @return pronadjeni pacijent ili null ako pacijenta vise nema ili
+     *         trazenje nije uspelo, uz poruku koju je korisnik vec dobio
+     */
+    private Pacijent nadjiPacijenta(Pacijent izabrani) {
+        Pacijent pronadjeni;
+        try {
+            pronadjeni = Kontroler.getInstanca().pretraziPacijenta(izabrani.getIdPacijent());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Greška", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+
+        if (pronadjeni == null) {
+            JOptionPane.showMessageDialog(this, "Sistem ne može da nađe pacijenta.",
+                    "Pacijent", JOptionPane.INFORMATION_MESSAGE);
+            ucitajPacijente();
+        }
+        return pronadjeni;
     }
 
     /**
@@ -313,19 +353,24 @@ public class UpravljanjePacijentimaForma extends JFrame {
             return;
         }
 
+        Pacijent pronadjeni = nadjiPacijenta(izabrani);
+        if (pronadjeni == null) {
+            return;
+        }
+
         JOptionPane.showMessageDialog(this, "Sistem je našao pacijenta.",
                 "Pacijent", JOptionPane.INFORMATION_MESSAGE);
 
         int potvrda = JOptionPane.showConfirmDialog(this,
                 "Da li ste sigurni da želite da obrišete pacijenta "
-                + izabrani.getIme() + " " + izabrani.getPrezime() + "?",
+                + pronadjeni.getIme() + " " + pronadjeni.getPrezime() + "?",
                 "Potvrda brisanja", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (potvrda != JOptionPane.YES_OPTION) {
             return;
         }
 
         try {
-            Kontroler.getInstanca().obrisiPacijenta(izabrani);
+            Kontroler.getInstanca().obrisiPacijenta(pronadjeni);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);

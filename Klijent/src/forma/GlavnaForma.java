@@ -36,6 +36,7 @@ import model.Specijalizacija;
 import model.StatusTermina;
 import model.Stomatolog;
 import model.Termin;
+import model.Usluga;
 
 /**
  * Glavna forma klijenta - prikazuje termine ulogovanog stomatologa.
@@ -46,6 +47,7 @@ public class GlavnaForma extends JFrame {
 
     /** Stavka koja u padajucim listama pretrage znaci "bez filtera". */
     private static final String SVI = "Svi";
+    private static final String SVE = "Sve";
 
     /** Do ove sirine polja pretrage mogu da se skupe u uskom prozoru. */
     private static final int NAJMANJA_SIRINA_POLJA = 45;
@@ -60,6 +62,7 @@ public class GlavnaForma extends JFrame {
     private DatePicker biracTrazenogDatuma;
     private JComboBox<Object> cmbTrazeniStatus;
     private JComboBox<Object> cmbTrazeniPacijent;
+    private JComboBox<Object> cmbTrazenaUsluga;
     private JButton btnPretrazi;
     private JButton btnResetuj;
 
@@ -71,6 +74,7 @@ public class GlavnaForma extends JFrame {
     private LocalDate kriterijumDatum;
     private StatusTermina kriterijumStatus;
     private Pacijent kriterijumPacijent;
+    private Usluga kriterijumUsluga;
 
     private JButton btnNovi;
     private JButton btnIzmeni;
@@ -85,6 +89,7 @@ public class GlavnaForma extends JFrame {
         inicijalizujKomponente();
         ucitajSpecijalizacije();
         ucitajPacijente();
+        ucitajUsluge();
         ucitajTermine();
     }
 
@@ -220,12 +225,17 @@ public class GlavnaForma extends JFrame {
         cmbTrazeniPacijent.addItem(SVI);
         cmbTrazeniPacijent.setRenderer(new RendererPacijenta());
 
+        cmbTrazenaUsluga = new JComboBox<>();
+        cmbTrazenaUsluga.addItem(SVE);
+        cmbTrazenaUsluga.setRenderer(new RendererNaziva());
+
         // polja imaju malu najmanju sirinu, pa se u uskom prozoru skupljaju
         // umesto da guraju dugmad van vidljivog dela panela; duga imena
         // pacijenata se u padajucoj listi i dalje vide u punoj duzini
         ogranicSirinu(biracTrazenogDatuma, 150);
         ogranicSirinu(cmbTrazeniStatus, 130);
         ogranicSirinu(cmbTrazeniPacijent, 200);
+        ogranicSirinu(cmbTrazenaUsluga, 180);
 
         int kolona = 0;
         kolona = dodajURed(panel, gbc, kolona, new JLabel("Datum:"));
@@ -234,6 +244,8 @@ public class GlavnaForma extends JFrame {
         kolona = dodajURed(panel, gbc, kolona, cmbTrazeniStatus);
         kolona = dodajURed(panel, gbc, kolona, new JLabel("Pacijent:"));
         kolona = dodajURed(panel, gbc, kolona, cmbTrazeniPacijent);
+        kolona = dodajURed(panel, gbc, kolona, new JLabel("Usluga:"));
+        kolona = dodajURed(panel, gbc, kolona, cmbTrazenaUsluga);
 
         btnPretrazi = new JButton("Pretraži");
         btnResetuj = new JButton("Resetuj filtere");
@@ -314,6 +326,20 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
+     * Puni padajucu listu usluga za pretragu.
+     */
+    private void ucitajUsluge() {
+        try {
+            for (Usluga usluga : Kontroler.getInstanca().vratiListuUsluga()) {
+                cmbTrazenaUsluga.addItem(usluga);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Greška", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
      * Cita kriterijume iz polja i prikazuje termine koji im odgovaraju.
      */
     private void pretrazi() {
@@ -322,10 +348,12 @@ public class GlavnaForma extends JFrame {
 
         Object izabranStatus = cmbTrazeniStatus.getSelectedItem();
         Object izabranPacijent = cmbTrazeniPacijent.getSelectedItem();
+        Object izabranaUsluga = cmbTrazenaUsluga.getSelectedItem();
 
         kriterijumDatum = datum;
         kriterijumStatus = izabranStatus instanceof StatusTermina ? (StatusTermina) izabranStatus : null;
         kriterijumPacijent = izabranPacijent instanceof Pacijent ? (Pacijent) izabranPacijent : null;
+        kriterijumUsluga = izabranaUsluga instanceof Usluga ? (Usluga) izabranaUsluga : null;
 
         ucitajTermine(true);
     }
@@ -337,10 +365,12 @@ public class GlavnaForma extends JFrame {
         biracTrazenogDatuma.clear();
         cmbTrazeniStatus.setSelectedItem(SVI);
         cmbTrazeniPacijent.setSelectedItem(SVI);
+        cmbTrazenaUsluga.setSelectedItem(SVE);
 
         kriterijumDatum = null;
         kriterijumStatus = null;
         kriterijumPacijent = null;
+        kriterijumUsluga = null;
 
         ucitajTermine(true);
     }
@@ -362,6 +392,24 @@ public class GlavnaForma extends JFrame {
         TableColumnModel kolone = tabelaTermina.getColumnModel();
         for (int i = 0; i < kolone.getColumnCount() && i < sirine.length; i++) {
             kolone.getColumn(i).setPreferredWidth(sirine[i]);
+        }
+    }
+
+    /**
+     * Prikaz usluge u padajucoj listi pretrage. Stavke koje nisu usluga (na
+     * primer tekst "Sve") prikazuju se onako kako ih prikazuje podrazumevani
+     * renderer.
+     */
+    private static class RendererNaziva extends javax.swing.DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(javax.swing.JList<?> lista, Object vrednost,
+                int indeks, boolean izabran, boolean fokusiran) {
+            super.getListCellRendererComponent(lista, vrednost, indeks, izabran, fokusiran);
+            if (vrednost instanceof Usluga) {
+                setText(((Usluga) vrednost).getNaziv());
+            }
+            return this;
         }
     }
 
@@ -388,7 +436,7 @@ public class GlavnaForma extends JFrame {
         List<Termin> termini;
         try {
             termini = Kontroler.getInstanca().pretraziTermineUlogovanog(
-                    kriterijumDatum, kriterijumStatus, kriterijumPacijent);
+                    kriterijumDatum, kriterijumStatus, kriterijumPacijent, kriterijumUsluga);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
@@ -418,8 +466,11 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
-     * Otvara dijalog za izmenu izabranog termina. Pre samog dijaloga sistem
-     * javlja da je nasao termin, kako propisuje scenario slucaja koriscenja.
+     * Otvara dijalog za izmenu izabranog termina.
+     *
+     * Scenario razlikuje pretragu liste termina od trazenja jednog, izabranog
+     * termina, pa se i ovde termin ponovo trazi na serveru. Tako dijalog
+     * dobija svez podatak, zajedno sa stavkama koje termin ima u bazi.
      */
     private void izmeniTermin() {
         Termin izabrani = vratiIzabraniTermin();
@@ -427,10 +478,39 @@ public class GlavnaForma extends JFrame {
             return;
         }
 
+        Termin pronadjeni = nadjiTermin(izabrani);
+        if (pronadjeni == null) {
+            return;
+        }
+
         JOptionPane.showMessageDialog(this, "Sistem je našao termin.",
                 "Termin", JOptionPane.INFORMATION_MESSAGE);
 
-        new NoviTerminDijalog(this, izabrani).setVisible(true);
+        new NoviTerminDijalog(this, pronadjeni).setVisible(true);
+    }
+
+    /**
+     * Trazi izabrani termin na serveru.
+     *
+     * @return pronadjeni termin ili null ako termina vise nema ili trazenje
+     *         nije uspelo, uz poruku koju je korisnik vec dobio
+     */
+    private Termin nadjiTermin(Termin izabrani) {
+        Termin pronadjeni;
+        try {
+            pronadjeni = Kontroler.getInstanca().pretraziTermin(izabrani.getIdTermin());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Greška", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+
+        if (pronadjeni == null) {
+            JOptionPane.showMessageDialog(this, "Sistem ne može da nađe termin.",
+                    "Termin", JOptionPane.INFORMATION_MESSAGE);
+            ucitajTermine();
+        }
+        return pronadjeni;
     }
 
     private void obrisiTermin() {

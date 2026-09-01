@@ -38,6 +38,7 @@ import kontroler.Kontroler;
 import model.Pacijent;
 import model.StatusTermina;
 import model.StavkaTermina;
+import model.Stomatolog;
 import model.Termin;
 import model.Usluga;
 
@@ -77,6 +78,7 @@ public class NoviTerminDijalog extends JDialog {
     private final GlavnaForma roditeljskaForma;
     private final Termin terminZaIzmenu;
 
+    private JComboBox<Stomatolog> cmbStomatolog;
     private JComboBox<Pacijent> cmbPacijent;
     private JComboBox<Usluga> cmbUsluga;
     private JComboBox<StatusTermina> cmbStatus;
@@ -103,6 +105,7 @@ public class NoviTerminDijalog extends JDialog {
 
         // dijalog se pakuje tek kada su sve liste popunjene, jer se tek tada
         // zna stvarna sirina komponenti - u suprotnom bi labele bile odsecene
+        ogranicSirinu(cmbStomatolog);
         ogranicSirinu(cmbPacijent);
         ogranicSirinu(cmbUsluga);
         pack();
@@ -135,6 +138,11 @@ public class NoviTerminDijalog extends JDialog {
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.anchor = GridBagConstraints.WEST;
 
+        // stomatolog se ne bira - termin se uvek zakazuje kod ulogovanog, pa
+        // polje stoji prikazano ali onemoguceno, isto kao status pri unosu
+        cmbStomatolog = new JComboBox<>();
+        cmbStomatolog.setRenderer(new RendererStomatologa());
+        cmbStomatolog.setEnabled(false);
         cmbPacijent = new JComboBox<>();
         cmbPacijent.setRenderer(new RendererPacijenta());
         cmbStatus = new JComboBox<>(StatusTermina.values());
@@ -146,11 +154,12 @@ public class NoviTerminDijalog extends JDialog {
         txtNapomena.setLineWrap(true);
         txtNapomena.setWrapStyleWord(true);
 
-        dodajRed(panel, gbc, 0, "Pacijent:", cmbPacijent);
-        dodajRed(panel, gbc, 1, "Datum:", biracDatuma);
-        dodajRed(panel, gbc, 2, "Vreme:", cmbVreme);
-        dodajRed(panel, gbc, 3, "Status:", cmbStatus);
-        dodajVisokRed(panel, gbc, 4, "Napomena:", new JScrollPane(txtNapomena));
+        dodajRed(panel, gbc, 0, "Stomatolog:", cmbStomatolog);
+        dodajRed(panel, gbc, 1, "Pacijent:", cmbPacijent);
+        dodajRed(panel, gbc, 2, "Datum:", biracDatuma);
+        dodajRed(panel, gbc, 3, "Vreme:", cmbVreme);
+        dodajRed(panel, gbc, 4, "Status:", cmbStatus);
+        dodajVisokRed(panel, gbc, 5, "Napomena:", new JScrollPane(txtNapomena));
 
         return panel;
     }
@@ -329,6 +338,16 @@ public class NoviTerminDijalog extends JDialog {
      */
     private void ucitajListe() {
         try {
+            for (Stomatolog s : Kontroler.getInstanca().vratiListuStomatologa()) {
+                cmbStomatolog.addItem(s);
+            }
+            izaberiStomatologa();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Greška", JOptionPane.ERROR_MESSAGE);
+        }
+
+        try {
             for (Pacijent p : Kontroler.getInstanca().vratiListuPacijenata()) {
                 cmbPacijent.addItem(p);
             }
@@ -417,6 +436,25 @@ public class NoviTerminDijalog extends JDialog {
         }
         cmbVreme.addItem(vreme);
         cmbVreme.setSelectedItem(vreme);
+    }
+
+    /**
+     * Bira stomatologa kod koga je termin zakazan: pri unosu je to ulogovani
+     * stomatolog, a pri izmeni onaj koji je na terminu zapamcen.
+     */
+    private void izaberiStomatologa() {
+        Stomatolog trazeni = jeIzmena()
+                ? terminZaIzmenu.getStomatolog()
+                : Kontroler.getInstanca().getUlogovaniStomatolog();
+        if (trazeni == null) {
+            return;
+        }
+        for (int i = 0; i < cmbStomatolog.getItemCount(); i++) {
+            if (cmbStomatolog.getItemAt(i).getIdStomatolog() == trazeni.getIdStomatolog()) {
+                cmbStomatolog.setSelectedIndex(i);
+                return;
+            }
+        }
     }
 
     private void izaberiPacijenta(Pacijent pacijent) {
@@ -598,6 +636,20 @@ public class NoviTerminDijalog extends JDialog {
                 Usluga u = (Usluga) vrednost;
                 setText(String.format("%s (%.2f din, %d min)",
                         u.getNaziv(), u.getCena(), u.getTrajanje()));
+            }
+            return this;
+        }
+    }
+
+    private static class RendererStomatologa extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> lista, Object vrednost, int indeks,
+                boolean izabran, boolean fokusiran) {
+            super.getListCellRendererComponent(lista, vrednost, indeks, izabran, fokusiran);
+            if (vrednost instanceof Stomatolog) {
+                Stomatolog s = (Stomatolog) vrednost;
+                setText("dr " + s.getIme() + " " + s.getPrezime());
             }
             return this;
         }

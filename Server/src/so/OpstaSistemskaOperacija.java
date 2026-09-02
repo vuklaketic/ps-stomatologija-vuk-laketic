@@ -7,22 +7,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Zajednicki predak svih sistemskih operacija.
+ * Zajednicki predak svih sistemskih operacija - primenjuje sablon metodu:
+ * {@link #izvrsiOperaciju(java.lang.Object)} vodi nepromenljiv redosled
+ * (preduslovi, izvrsenje, potvrda/ponistavanje transakcije), a konkretne
+ * operacije popunjavaju samo preduslovi() i izvrsi().
  *
- * Primenjuje sablon metodu: {@link #izvrsiOperaciju(java.lang.Object)} utvrdjuje
- * nepromenljiv redosled koraka (provera preduslova, izvrsenje, potvrda odnosno
- * ponistavanje transakcije), a konkretne operacije popunjavaju samo korake
- * {@link #preduslovi(java.lang.Object)} i {@link #izvrsi(java.lang.Object)}.
- *
- * Zahvaljujuci tome nijedna konkretna operacija ne barata transakcijom, pa nije
- * moguce da se negde zaboravi potvrda ili ponistavanje.
- *
- * Na istom mestu se razdvajaju i dve vrste neuspeha. Krsenje poslovnog pravila
- * konkretna operacija prijavljuje obicnim izuzetkom sa razumljivom porukom i ta
- * poruka se prosledjuje korisniku nepromenjena. Tehnicki problem, kao sto je
- * nedostupna baza, javlja se kao izuzetak baze ili nepredvidjen izuzetak i
- * njegova poruka nije za korisnika, pa se zamenjuje porukom operacije iz
- * specifikacije, a tehnicki detalj ostaje u logu i kao dopuna poruke.
+ * Krsenje poslovnog pravila se prijavljuje obicnim izuzetkom sa porukom za
+ * korisnika; tehnicki problem (npr. baza nedostupna) dobija poruku iz
+ * specifikacije operacije, a pravi detalj ostaje u logu.
  *
  * @author vukla
  */
@@ -52,8 +44,7 @@ public abstract class OpstaSistemskaOperacija {
             izvrsi(objekat);
             potvrdiTransakciju();
         } catch (SQLException | RuntimeException ex) {
-            // tehnicki problem - korisniku ide poruka operacije, a sirova
-            // poruka baze ostaje u logu i kao dopuna, radi trazenja uzroka
+            // tehnicki problem - korisniku ide poruka operacije, sirovi detalj u log
             ponistiTransakciju();
             logger.log(Level.SEVERE, "Tehnicka greska u operaciji "
                     + getClass().getSimpleName(), ex);
@@ -66,10 +57,7 @@ public abstract class OpstaSistemskaOperacija {
         }
     }
 
-    /**
-     * Poruka koju korisnik dobija kada operacija ne uspe iz tehnickih razloga.
-     * Svaka operacija vraca recenicu propisanu za njen slucaj koriscenja.
-     */
+    /** Poruka za tehnicki neuspeh - svaka operacija je propisuje za svoj slucaj koriscenja. */
     protected abstract String porukaONeuspehu();
 
     /**
@@ -89,14 +77,8 @@ public abstract class OpstaSistemskaOperacija {
                 : prviRed;
     }
 
-    /**
-     * Provera preduslova koje parametar mora da ispuni.
-     */
     protected abstract void preduslovi(Object objekat) throws Exception;
 
-    /**
-     * Sam posao operacije.
-     */
     protected abstract void izvrsi(Object objekat) throws Exception;
 
     private void potvrdiTransakciju() throws Exception {

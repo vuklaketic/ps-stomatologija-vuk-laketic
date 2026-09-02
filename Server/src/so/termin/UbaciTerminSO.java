@@ -36,9 +36,7 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
         if (termin.getDatum() == null || termin.getVreme() == null) {
             throw new Exception("Termin mora imati datum i vreme.");
         }
-        // termin se ne zakazuje unazad; za danasnji dan se poredi i vreme.
-        // Postojecem terminu se datum i vreme ne diraju, pa isto pravilo ne
-        // vazi i za izmenu
+        // termin se ne zakazuje unazad; postojecem terminu se datum i vreme ne diraju
         if (jeUProslosti(termin.getDatum(), termin.getVreme())) {
             throw new Exception("Termin ne može biti zakazan u prošlosti.");
         }
@@ -51,8 +49,7 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
         if (termin.getStavke() == null || termin.getStavke().isEmpty()) {
             throw new Exception("Termin mora imati bar jednu uslugu.");
         }
-        // stavka se prepoznaje po usluzi, pa ista usluga ne sme da se pojavi
-        // dva puta - u tom slucaju se unosi jedna stavka u vecoj kolicini
+        // ista usluga ne sme dva puta u jednom terminu
         List<Integer> videneUsluge = new ArrayList<>();
         for (StavkaTermina stavka : termin.getStavke()) {
             if (stavka.getUsluga() == null || stavka.getUsluga().getIdUsluga() <= 0) {
@@ -75,9 +72,7 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
 
         proveriZauzetost(termin);
 
-        // poslovno pravilo: stomatolog u jednom danu ne moze da primi vise od
-        // deset pacijenata; otkazani termini se ne racunaju, jer je to vreme
-        // ponovo slobodno
+        // otkazani termini se ne racunaju u dnevni broj, jer je to vreme ponovo slobodno
         String uslovBroja = Termin.SPOJEVI
                 + " WHERE termin.idStomatolog = " + termin.getStomatolog().getIdStomatolog()
                 + " AND termin.datum = '" + termin.getDatum() + "'"
@@ -96,15 +91,11 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
         int idTermin = broker.dodaj(termin);
         termin.setIdTermin(idTermin);
 
-        // termin se tek upisuje, pa njegove stavke dobijaju redne brojeve od
-        // jedan naviste, redosledom kojim su unete na formi
+        // stavke dobijaju redne brojeve od jedan, redosledom unosa na formi
         int redniBroj = 1;
         for (StavkaTermina stavka : termin.getStavke()) {
             stavka.setTermin(termin);
             stavka.setRb(redniBroj++);
-            // cena usluge i iznos su vezani za sifarnik usluga, pa se ne
-            // preuzimaju onakvi kakvi su stigli sa klijenta: cena se cita iz
-            // baze, a iznos racuna iz nje i kolicine
             stavka.setCenaUsluge(vratiCenuUsluge(stavka));
             stavka.izracunajIznos();
             broker.dodaj(stavka);
@@ -114,17 +105,9 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
     }
 
     /**
-     * Proverava da li je stomatolog slobodan za termin koji se zakazuje.
-     *
-     * Ne poredi se samo pocetno vreme, jer termin traje onoliko koliko traju
-     * usluge na njemu: termin u osam sati sa uslugama od ukupno devedeset
-     * minuta zauzima vreme sve do pola deset, pa u tom rasponu ne moze da stane
-     * jos jedan. Dva termina se preklapaju kada svaki od njih pocinje pre nego
-     * sto se onaj drugi zavrsi. Termini koji se nadovezuju - jedan pocinje
-     * tacno kada se drugi zavrsi - nisu preklapanje, pa se porede strogim
-     * nejednakostima.
-     *
-     * Otkazani termini se ne racunaju, jer je njihovo vreme ponovo slobodno.
+     * Proverava da li je stomatolog slobodan za termin koji se zakazuje,
+     * poredeci intervale trajanja (ne samo pocetno vreme) - termini koji se
+     * nadovezuju nisu preklapanje. Otkazani termini se ne racunaju.
      */
     private void proveriZauzetost(Termin termin) throws Exception {
         LocalDateTime pocetakNovog = LocalDateTime.of(termin.getDatum(), termin.getVreme());
@@ -150,11 +133,8 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
     }
 
     /**
-     * Racuna koliko traje termin koji se zakazuje. Svaka stavka traje onoliko
-     * koliko traje njena usluga puta kolicina - dve plombe se ne rade u vremenu
-     * jedne - po istom pravilu po kome se i iznos stavke racuna iz kolicine i
-     * cene. Trajanje se cita iz sifarnika, a ne preuzima sa klijenta, isto kao
-     * i cena usluge.
+     * Racuna trajanje termina kao zbir (trajanje usluge x kolicina) po
+     * stavkama, isto kao i iznos. Cita se iz sifarnika, ne sa klijenta.
      */
     private int trajanjeNovogTermina(Termin termin) throws Exception {
         int trajanje = 0;
@@ -164,12 +144,7 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
         return trajanje;
     }
 
-    /**
-     * Racuna koliko traje termin koji je vec zapamcen, po istom pravilu -
-     * trajanje usluge puta kolicina, sabrano po stavkama. Njegove stavke se
-     * citaju iz baze zajedno sa uslugom, pa je i trajanje procitano iz
-     * sifarnika.
-     */
+    /** Isto sto i {@link #trajanjeNovogTermina}, za termin koji je vec zapamcen. */
     private int trajanjePostojecegTermina(Termin postojeci) throws Exception {
         String uslov = StavkaTermina.SPOJEVI
                 + " WHERE stavkatermina.idTermin = " + postojeci.getIdTermin();

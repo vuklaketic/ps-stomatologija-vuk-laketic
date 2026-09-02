@@ -10,15 +10,12 @@ import java.util.logging.Logger;
 
 /**
  * Glavna serverska nit - osluskuje port, prihvata klijente i za svakog otvara
- * po jednu nit {@link ObradaZahteva}.
+ * po jednu nit {@link ObradaZahteva}. Njome upravlja serverska forma preko
+ * {@link #pokreniServer()} i {@link #zaustaviServer()}; posto nasledjuje
+ * {@link Thread}, forma za svako novo pokretanje pravi novi objekat.
  *
- * Klasa je servisna: njome upravlja serverska forma preko metoda
- * {@link #pokreniServer()} i {@link #zaustaviServer()}. Posto nasledjuje
- * {@link Thread}, jedna instanca moze da se pokrene samo jednom, pa forma za
- * svako novo pokretanje pravi novi objekat.
- *
- * O svemu sto se desava izvestava se {@link OsluskivacServera}, ako je
- * postavljen, tako da forma moze da prikaze iste poruke koje idu i u log.
+ * Dogadjaje prati {@link OsluskivacServera}, ako je postavljen, pa forma moze
+ * da prikaze iste poruke koje idu i u log.
  *
  * @author vukla
  */

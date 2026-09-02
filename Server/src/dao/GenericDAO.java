@@ -10,20 +10,13 @@ import java.util.logging.Logger;
 import model.ApstraktniDomenskiObjekat;
 
 /**
- * Genericki objekat za pristup bazi podataka (broker baze podataka).
+ * Genericki broker baze podataka - ne poznaje nijednu konkretnu domensku
+ * klasu, vec sve (naziv tabele, kolone, primarni kljuc...) dobija preko
+ * {@link ApstraktniDomenskiObjekat}, pa je dovoljan jedan broker za ceo sistem.
  *
- * Klasa ne poznaje nijednu konkretnu domensku klasu - sve sto joj je potrebno
- * (naziv tabele, kolone, vrednosti, primarni kljuc, citanje result set-a)
- * dobija preko interfejsa {@link ApstraktniDomenskiObjekat}. Zahvaljujuci tome
- * je dovoljan jedan broker za ceo sistem.
- *
- * Uslov koji se prosledjuje metodama za citanje dodaje se na upit u izvornom
- * obliku, pa moze da sadrzi i spajanja i WHERE klauzu (npr.
- * {@code Termin.SPOJEVI + " WHERE termin.idStomatolog = 3"}). Uslove sastavljaju
- * sistemske operacije.
- *
- * Transakcijom upravlja {@code OpstaSistemskaOperacija}, jer se jedna sistemska
- * operacija cesto sastoji od vise poziva ovog brokera.
+ * Uslov prosledjen metodama za citanje ide u upit u izvornom obliku (spajanja
+ * i WHERE), sastavljen od strane sistemskih operacija. Transakcijom upravlja
+ * {@code OpstaSistemskaOperacija}.
  *
  * @author vukla
  */

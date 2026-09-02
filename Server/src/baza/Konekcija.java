@@ -14,16 +14,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Singleton koji drzi jednu jedinu konekciju servera ka bazi podataka.
+ * Singleton koji drzi jednu konekciju servera ka bazi. Parametri se citaju iz
+ * {@code baza.properties}; ako fajl ne postoji, koriste se podrazumevane
+ * vrednosti iz ove klase, pa server radi i bez dodatnog podesavanja.
  *
- * Parametri konekcije se citaju iz fajla {@code baza.properties} iz radnog
- * direktorijuma projekta. Ako fajl ne postoji, koriste se podrazumevane
- * vrednosti definisane u ovoj klasi, pa server moze da se pokrene i bez
- * dodatnog podesavanja.
- *
- * Konekcija se otvara sa iskljucenim automatskim potvrdjivanjem transakcije
- * (autoCommit = false), jer se sistemske operacije nad terminom sastoje od vise
- * SQL naredbi koje moraju da se izvrse kao celina.
+ * Konekcija ima autoCommit=false, jer se sistemske operacije nad terminom
+ * sastoje od vise SQL naredbi koje moraju da se izvrse kao celina.
  *
  * @author vukla
  */
@@ -154,18 +150,12 @@ public class Konekcija {
         return getKonekcija();
     }
 
-    /**
-     * Potvrdjuje tekucu transakciju.
-     */
     public synchronized void potvrdiTransakciju() throws SQLException {
         if (konekcija != null && !konekcija.isClosed()) {
             konekcija.commit();
         }
     }
 
-    /**
-     * Ponistava tekucu transakciju.
-     */
     public synchronized void ponistiTransakciju() {
         try {
             if (konekcija != null && !konekcija.isClosed()) {
@@ -176,9 +166,6 @@ public class Konekcija {
         }
     }
 
-    /**
-     * Zatvara konekciju ka bazi.
-     */
     public synchronized void zatvoriKonekciju() {
         try {
             if (konekcija != null && !konekcija.isClosed()) {

@@ -57,11 +57,7 @@ public class UpravljanjePacijentimaForma extends JFrame {
     private JButton btnObrisi;
     private JButton btnOsvezi;
 
-    /**
-     * Kriterijumi poslednje pretrage. Cuvaju se odvojeno od polja forme, da
-     * osvezavanje liste posle unosa ili brisanja ne bi zavisilo od onoga sto
-     * korisnik u medjuvremenu kuca.
-     */
+    /** Kriterijumi poslednje pretrage, odvojeni od polja forme da osvezavanje liste ne zavisi od unosa u toku. */
     private String kriterijumIme;
     private String kriterijumPrezime;
     private Ordinacija kriterijumOrdinacija;
@@ -78,8 +74,7 @@ public class UpravljanjePacijentimaForma extends JFrame {
         setResizable(true);
         setLayout(new BorderLayout());
 
-        // u zaglavlju je naslov, a povratak na termine je u desnom uglu,
-        // odvojen od akcionih dugmadi nad pacijentima
+        // naslov levo, povratak na termine desno
         JPanel panelZaglavlje = new JPanel(new BorderLayout());
         panelZaglavlje.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
@@ -126,8 +121,7 @@ public class UpravljanjePacijentimaForma extends JFrame {
         // zatvara se samo ovaj prozor, glavna forma ostaje otvorena
         btnNazad.addActionListener(e -> dispose());
 
-        // najmanja sirina se izvodi iz stvarne sirine panela za pretragu, pa
-        // red sa kriterijumima uvek stane ceo
+        // izvedena iz sirine panela pretrage, da red sa kriterijumima uvek stane ceo
         int najmanjaSirina = Math.max(900, panelPretrage.getPreferredSize().width + 40);
         setMinimumSize(new Dimension(najmanjaSirina, 550));
         setSize(Math.max(1000, najmanjaSirina), 600);
@@ -253,10 +247,8 @@ public class UpravljanjePacijentimaForma extends JFrame {
     }
 
     /**
-     * Ucitava pacijente koji odgovaraju poslednje zadatim kriterijumima.
-     *
-     * Ovu inacicu koristi dijalog za pacijenta i brisanje pacijenta, pa se
-     * prazna lista ne prijavljuje posebnom porukom.
+     * Ucitava pacijente po poslednjim kriterijumima. Koristi je i dijalog za
+     * pacijenta i brisanje, pa prazna lista ne prijavljuje posebnu poruku.
      */
     public final void ucitajPacijente() {
         ucitajPacijente(false);
@@ -294,11 +286,8 @@ public class UpravljanjePacijentimaForma extends JFrame {
     }
 
     /**
-     * Otvara dijalog za izmenu izabranog pacijenta.
-     *
-     * Scenario razlikuje pretragu liste pacijenata od trazenja jednog,
-     * izabranog pacijenta, pa se i ovde pacijent ponovo trazi na serveru, a
-     * tek onda otvara dijalog.
+     * Otvara dijalog za izmenu izabranog pacijenta - pacijent se prvo ponovo
+     * trazi na serveru, kako scenario slucaja koriscenja zahteva.
      */
     private void izmeniPacijenta() {
         Pacijent izabrani = vratiIzabranogPacijenta();
@@ -342,10 +331,8 @@ public class UpravljanjePacijentimaForma extends JFrame {
     }
 
     /**
-     * Brisanje pacijenta prati scenario slucaja koriscenja "Obrisi pacijenta":
-     * sistem prvo javlja da je nasao izabranog pacijenta, zatim trazi potvrdu
-     * brisanja i tek na potvrdu poziva sistemsku operaciju, o cijem ishodu
-     * takodje izvestava.
+     * Prati scenario slucaja koriscenja "Obrisi pacijenta": nalazi pacijenta,
+     * trazi potvrdu, tek onda brise i javlja ishod.
      */
     private void obrisiPacijenta() {
         Pacijent izabrani = vratiIzabranogPacijenta();

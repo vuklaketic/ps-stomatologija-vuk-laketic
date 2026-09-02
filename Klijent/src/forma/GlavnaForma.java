@@ -72,11 +72,7 @@ public class GlavnaForma extends JFrame {
     private JButton btnPretrazi;
     private JButton btnResetuj;
 
-    /**
-     * Kriterijumi po kojima je poslednja pretraga izvrsena. Cuvaju se odvojeno
-     * od polja forme, da osvezavanje liste posle unosa ili brisanja termina ne
-     * bi ponovo proveravalo ono sto korisnik u medjuvremenu kuca u poljima.
-     */
+    /** Kriterijumi poslednje pretrage, odvojeni od polja forme da osvezavanje ne zavisi od unosa u toku. */
     private LocalDate kriterijumDatum;
     private StatusTermina kriterijumStatus;
     private Pacijent kriterijumPacijent;
@@ -117,8 +113,7 @@ public class GlavnaForma extends JFrame {
 
         setJMenuBar(napraviMeni());
 
-        // u zaglavlju su podaci o ulogovanom stomatologu, a odjava je u desnom
-        // uglu, odvojena od akcionih dugmadi nad terminima
+        // zaglavlje: podaci o stomatologu levo, odjava desno
         JPanel panelZaglavlje = new JPanel(new BorderLayout());
         panelZaglavlje.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
@@ -132,8 +127,7 @@ public class GlavnaForma extends JFrame {
         lblUlogovani.setAlignmentX(Component.LEFT_ALIGNMENT);
         panelUlogovani.add(lblUlogovani);
 
-        // linija sa specijalizacijama se popunjava tek posle citanja sa servera,
-        // pa za stomatologa koji nema nijednu ostaje sakrivena
+        // popunjava se tek posle citanja sa servera, sakriveno ako nema specijalizacija
         lblSpecijalizacije = new JLabel();
         lblSpecijalizacije.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblSpecijalizacije.setVisible(false);
@@ -189,8 +183,7 @@ public class GlavnaForma extends JFrame {
         btnSpecijalizacija.addActionListener(e -> novaSpecijalizacija());
         btnOdjava.addActionListener(e -> odjaviSe());
 
-        // meni i dugmad su dva ulaza u istu funkcionalnost, pa pozivaju iste
-        // metode - nijedna radnja nije napisana dvaput
+        // meni i dugmad su dva ulaza u istu funkcionalnost - nijedna radnja nije napisana dvaput
         mniNoviTermin.addActionListener(e -> noviTermin());
         mniIzmeniTermin.addActionListener(e -> izmeniTermin());
         mniObrisiTermin.addActionListener(e -> obrisiTermin());
@@ -200,14 +193,11 @@ public class GlavnaForma extends JFrame {
         mniOProgramu.addActionListener(e -> oProgramu());
         mniOdjava.addActionListener(e -> odjaviSe());
 
-        // najmanja sirina prozora se izvodi iz stvarne sirine panela za
-        // pretragu, pa red sa kriterijumima uvek stane ceo, bez obzira na to
-        // koliko je siroka slova tema iscrtala
+        // izvedena iz sirine panela pretrage, da red sa kriterijumima uvek stane ceo
         int najmanjaSirina = Math.max(900, panelPretrage.getPreferredSize().width + 40);
         setMinimumSize(new Dimension(najmanjaSirina, 550));
 
-        // prozor se otvara maksimizovan, a ova velicina vazi kada ga korisnik
-        // vrati iz maksimizovanog stanja
+        // vazi kad korisnik vrati prozor iz maksimizovanog stanja
         setSize(Math.max(1000, najmanjaSirina), 600);
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -221,13 +211,7 @@ public class GlavnaForma extends JFrame {
         });
     }
 
-    /**
-     * Pravi glavni meni forme.
-     *
-     * Meni pokriva iste radnje kao dugmad na formi: dugmad su brzi pristup
-     * onome sto se najcesce koristi, a meni drzi sve radnje na jednom mestu i
-     * grupisane po celinama nad kojima se rade.
-     */
+    /** Pravi glavni meni forme - pokriva iste radnje kao dugmad, koja ostaju brzi pristup najcescem. */
     private JMenuBar napraviMeni() {
         JMenuBar meni = new JMenuBar();
 
@@ -262,8 +246,7 @@ public class GlavnaForma extends JFrame {
         meniPrimalac.add(podmeniPacijent);
         meni.add(meniPrimalac);
 
-        // sifarnici - od tri sifarnika iz specifikacije, forma postoji samo za
-        // specijalizaciju, pa se ostala dva ne prikazuju kao prazne stavke
+        // od tri sifarnika, forma postoji samo za specijalizaciju - ostala dva se ne prikazuju
         JMenu meniSifarnici = new JMenu("Šifarnici");
         meniSifarnici.setMnemonic('S');
 
@@ -274,8 +257,7 @@ public class GlavnaForma extends JFrame {
         meniSifarnici.add(podmeniSpecijalizacija);
         meni.add(meniSifarnici);
 
-        // podesavanja - klijent nema sta da podesava, jer se podaci o bazi
-        // zadaju na serverskoj formi, pa je ovde samo podatak o programu
+        // baza se podesava na serverskoj formi, pa je ovde samo podatak o programu
         JMenu meniPodesavanja = new JMenu("Podešavanja");
         meniPodesavanja.setMnemonic('e');
         mniOProgramu = napraviStavku("O programu", 'O', 0);
@@ -308,12 +290,10 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
-     * Pravi panel u kome stomatolog bira kriterijume pretrage termina.
-     *
-     * Panel koristi GridBagLayout i sve drzi u jednom redu. FlowLayout ovde ne
-     * moze da se koristi: kada prozor nije dovoljno sirok, on prelama
-     * komponente u novi red, ali za visinu i dalje prijavljuje jedan red, pa
-     * prelomljena dugmad ispadnu iz panela i naljegnu na tabelu ispod.
+     * Pravi panel u kome stomatolog bira kriterijume pretrage termina, u
+     * jednom redu (GridBagLayout, ne FlowLayout - taj bi u uskom prozoru
+     * prelomio komponente u novi red bez da prijavi vecu visinu, pa bi
+     * prelomljena dugmad naleglo na tabelu ispod).
      */
     private JPanel napraviPanelPretrage() {
         JPanel panel = new JPanel(new GridBagLayout());
@@ -343,9 +323,7 @@ public class GlavnaForma extends JFrame {
         cmbTrazenaUsluga.addItem(SVE);
         cmbTrazenaUsluga.setRenderer(new RendererNaziva());
 
-        // polja imaju malu najmanju sirinu, pa se u uskom prozoru skupljaju
-        // umesto da guraju dugmad van vidljivog dela panela; duga imena
-        // pacijenata se u padajucoj listi i dalje vide u punoj duzini
+        // mala najmanja sirina, da se polja skupljaju umesto da guraju dugmad van vidljivog dela
         ogranicSirinu(biracTrazenogDatuma, 150);
         ogranicSirinu(cmbTrazeniStatus, 130);
         ogranicSirinu(cmbTrazeniPacijent, 200);
@@ -368,8 +346,7 @@ public class GlavnaForma extends JFrame {
         gbc.insets = new Insets(8, 5, 8, 5);
         kolona = dodajURed(panel, gbc, kolona, btnResetuj);
 
-        // prazna celija na kraju preuzima visak sirine, pa kriterijumi ostaju
-        // sabijeni uz levu ivicu umesto da se razvlace po celom prozoru
+        // prazna celija na kraju preuzima visak sirine, pa ostatak ostaje sabijen uz levu ivicu
         gbc.gridx = kolona;
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -402,11 +379,7 @@ public class GlavnaForma extends JFrame {
         return kolona + 1;
     }
 
-    /**
-     * Prikazuje specijalizacije ulogovanog stomatologa u zaglavlju. Ako ih
-     * stomatolog nema, linija se ne prikazuje, da zaglavlje ne bi nosilo
-     * podatak koji nista ne govori.
-     */
+    /** Prikazuje specijalizacije ulogovanog u zaglavlju; ako ih nema, linija se ne prikazuje. */
     private void ucitajSpecijalizacije() {
         try {
             List<String> nazivi = new ArrayList<>();
@@ -426,12 +399,9 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
-     * Puni padajucu listu pacijenata za pretragu.
-     *
-     * Poziva se pri otvaranju forme i svaki put kada se zatvori forma za rad
-     * sa pacijentima, jer je u medjuvremenu pacijent mogao da bude dodat,
-     * izmenjen ili obrisan. Zato se lista prvo prazni, pa ponovo puni, a
-     * izabrani kriterijum se zadrzava ako taj pacijent i dalje postoji.
+     * Puni padajucu listu pacijenata za pretragu. Poziva se pri otvaranju
+     * forme i posle zatvaranja forme za pacijente, pa se lista prvo prazni pa
+     * ponovo puni, a izabrani kriterijum ostaje ako taj pacijent i dalje postoji.
      */
     private void ucitajPacijente() {
         List<Pacijent> pacijenti;
@@ -523,11 +493,7 @@ public class GlavnaForma extends JFrame {
         ucitajTermine(true);
     }
 
-    /**
-     * Podesava izgled tabele: visinu redova, raspodelu sirina kolona i
-     * podebljano zaglavlje. Kolone se rasporedjuju po celoj sirini prozora, a
-     * zadate sirine odredjuju odnos izmedju njih.
-     */
+    /** Podesava izgled tabele: visinu redova, odnos sirina kolona (rasporedjenih po prozoru) i podebljano zaglavlje. */
     private void podesiTabelu() {
         tabelaTermina.setRowHeight(26);
         tabelaTermina.setFillsViewportHeight(true);
@@ -543,11 +509,7 @@ public class GlavnaForma extends JFrame {
         }
     }
 
-    /**
-     * Prikaz usluge u padajucoj listi pretrage. Stavke koje nisu usluga (na
-     * primer tekst "Sve") prikazuju se onako kako ih prikazuje podrazumevani
-     * renderer.
-     */
+    /** Prikaz usluge u listi pretrage; ostale stavke (npr. "Sve") idu kroz podrazumevani renderer. */
     private static class RendererNaziva extends javax.swing.DefaultListCellRenderer {
 
         @Override
@@ -562,12 +524,8 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
-     * Ucitava termine ulogovanog stomatologa koji odgovaraju poslednje zadatim
-     * kriterijumima pretrage i prikazuje ih u tabeli. Ako kriterijumi nisu
-     * zadati, prikazuju se svi njegovi termini.
-     *
-     * Ovu inacicu koriste dijalog za termin i brisanje termina, pa se prazna
-     * lista ne prijavljuje posebnom porukom.
+     * Ucitava termine ulogovanog po poslednjim kriterijumima. Koristi je i
+     * dijalog za termin i brisanje, pa prazna lista ne prijavljuje posebnu poruku.
      */
     public final void ucitajTermine() {
         ucitajTermine(false);
@@ -629,11 +587,8 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
-     * Otvara dijalog za izmenu izabranog termina.
-     *
-     * Scenario razlikuje pretragu liste termina od trazenja jednog, izabranog
-     * termina, pa se i ovde termin ponovo trazi na serveru. Tako dijalog
-     * dobija svez podatak, zajedno sa stavkama koje termin ima u bazi.
+     * Otvara dijalog za izmenu izabranog termina - termin se prvo ponovo
+     * trazi na serveru, da dijalog dobije svez podatak sa stavkama.
      */
     private void izmeniTermin() {
         Termin izabrani = vratiIzabraniTermin();
@@ -721,10 +676,7 @@ public class GlavnaForma extends JFrame {
     private void otvoriPacijente() {
         UpravljanjePacijentimaForma forma = new UpravljanjePacijentimaForma(this);
 
-        // dok je forma za pacijente otvorena, pacijent je mogao da bude dodat,
-        // izmenjen ili obrisan, pa se padajuca lista u pretrazi osvezava cim se
-        // ta forma zatvori - bez toga bi novi pacijent nedostajao u kriterijumu
-        // sve do ponovnog pokretanja aplikacije
+        // osvezava listu pacijenata u pretrazi cim se ova forma zatvori
         forma.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
@@ -736,11 +688,8 @@ public class GlavnaForma extends JFrame {
     }
 
     /**
-     * Odjavljuje stomatologa i vraca korisnika na formu za prijavu.
-     *
-     * Kontroler pri odjavi zatvara i vezu sa serverom, a Komunikacija pri
-     * zatvaranju ponistava svoju instancu, pa se pri sledecoj prijavi otvara
-     * nova veza. Aplikacija nastavlja da radi - ne poziva se System.exit.
+     * Odjavljuje stomatologa i vraca na formu za prijavu. Kontroler pri odjavi
+     * zatvara vezu sa serverom; aplikacija nastavlja da radi (bez System.exit).
      */
     private void odjaviSe() {
         Kontroler.getInstanca().odjaviSe();

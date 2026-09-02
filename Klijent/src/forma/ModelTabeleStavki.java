@@ -7,16 +7,13 @@ import model.StavkaTermina;
 import model.Usluga;
 
 /**
- * Model tabele za prikaz stavki termina koje se unose na formi.
+ * Model tabele za prikaz stavki termina koje se unose na formi. Stavke postoje
+ * samo u memoriji klijenta dok se ceo termin, zajedno sa svojom listom, ne
+ * upise na server u jednoj transakciji.
  *
- * Stavke koje ovaj model drzi postoje samo u memoriji klijenta, sve dok
- * stomatolog ne pozove sistem da zapamti termin. Tek tada ceo termin, zajedno
- * sa svojom listom stavki, odlazi na server i upisuje se u jednoj transakciji.
- *
- * Redni broj se dodeljuje samo novoj stavci, i to kao prvi slobodan broj u
- * tabeli. Stavke koje su vec zapamcene zadrzavaju svoj redni broj, jer je on
- * deo primarnog kljuca stavke - kada bi se stavke prenumerisale posle svakog
- * uklanjanja, izmena jedne stavke bi u bazi menjala i sve ostale.
+ * Redni broj se dodeljuje samo novoj stavci (prvi slobodan u tabeli); vec
+ * zapamcene ga zadrzavaju, jer je deo primarnog kljuca - prenumeracija bi u
+ * bazi izmenila i ostale stavke.
  *
  * @author vukla
  */

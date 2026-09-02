@@ -163,20 +163,14 @@ public class Termin implements ApstraktniDomenskiObjekat {
     }
 
     /**
-     * Vraca status pod kojim se termin prikazuje korisniku.
+     * Vraca status pod kojim se termin prikazuje korisniku. Zakazan termin
+     * cije je vreme proteklo prikazuje se kao odrzan (specifikacija trazi
+     * status zavrsenog); otkazan se ne dira, jer se nije ni desio.
      *
-     * Zakazan termin cije je vreme proteklo prikazuje se kao odrzan, jer se
-     * vise ne moze ni odrzati ni otkazati - to trazi i pravilo iz specifikacije
-     * po kome protekao termin ima status zavrsenog. Otkazan termin se ne dira,
-     * jer se on nije ni desio, pa nema smisla da protekom vremena postane
-     * odrzan.
-     *
-     * Prevodjenje se radi samo nad objektom koji se vraca pozivaocu - u bazi
-     * status ostaje onakav kakav je zapisan, sve dok stomatolog ne zapamti
-     * termin sa forme. Zato poslovna pravila, koja rade nad stvarnim stanjem
-     * baze (zauzetost termina i najveci dnevni broj termina), ovim nisu
-     * dodirnuta: ona status proveravaju u samom SQL upitu, a ne na ovom
-     * objektu.
+     * Prevodi se samo objekat koji se vraca pozivaocu - u bazi status ostaje
+     * nepromenjen dok se termin ne zapamti sa forme, pa poslovna pravila
+     * (zauzetost, dnevni broj) rade nad stvarnim stanjem baze, ne nad ovim
+     * objektom.
      */
     private static StatusTermina statusZaPrikaz(StatusTermina status, LocalDate datum, LocalTime vreme) {
         if (status != StatusTermina.ZAKAZAN || datum == null || vreme == null) {

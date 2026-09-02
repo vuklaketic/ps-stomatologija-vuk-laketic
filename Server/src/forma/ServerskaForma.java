@@ -25,14 +25,12 @@ import niti.GlavniServer;
 import niti.OsluskivacServera;
 
 /**
- * Glavna forma serverske aplikacije.
+ * Glavna forma serverske aplikacije. Sa nje se server pokrece i zaustavlja,
+ * prati se sta se desava i menjaju parametri konekcije sa bazom (meni
+ * "Podešavanja"), bez rucnog menjanja fajla i restarta aplikacije.
  *
- * Sa forme se server pokrece i zaustavlja, prati se sta se na njemu desava i
- * menjaju se parametri konekcije sa bazom (meni "Podešavanja"), bez rucnog
- * menjanja konfiguracionog fajla i bez ponovnog pokretanja aplikacije.
- *
- * Sama logika servera ostaje u klasi {@link GlavniServer} - forma je samo
- * upravlja i prikazuje poruke koje joj ta klasa salje kao osluskivacu.
+ * Sama logika servera je u {@link GlavniServer} - forma je samo prikazuje
+ * poruke koje joj ta klasa salje kao osluskivacu.
  *
  * @author vukla
  */
@@ -40,10 +38,7 @@ public class ServerskaForma extends JFrame implements OsluskivacServera {
 
     private static final DateTimeFormatter FORMAT_VREMENA = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    /**
-     * Server se posle zaustavljanja ne moze ponovo pokrenuti kao ista nit, pa
-     * se za svako pokretanje pravi nova instanca.
-     */
+    /** Server se ne moze ponovo pokrenuti kao ista nit, pa se za svako pokretanje pravi nova instanca. */
     private GlavniServer server;
 
     private JTextArea txtStatus;
@@ -97,8 +92,7 @@ public class ServerskaForma extends JFrame implements OsluskivacServera {
 
         prikaziStanje(false);
 
-        // prozor se otvara maksimizovan, a ova velicina vazi kada ga korisnik
-        // vrati iz maksimizovanog stanja
+        // vazi kad korisnik vrati prozor iz maksimizovanog stanja
         setSize(900, 550);
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -139,8 +133,7 @@ public class ServerskaForma extends JFrame implements OsluskivacServera {
         zabelezi("Pokretanje servera...");
 
         new Thread(() -> {
-            // veza sa bazom se proverava pre otvaranja porta, da server ne bi
-            // primao klijente ako baza nije dostupna
+            // baza se proverava pre otvaranja porta, da ne primi klijente bez baze
             try {
                 Konekcija.getInstanca().getKonekcija();
             } catch (Exception ex) {

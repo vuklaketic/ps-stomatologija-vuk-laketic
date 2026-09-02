@@ -22,14 +22,11 @@ import model.Usluga;
 
 /**
  * Klijentski kontroler - jedini sloj koji forme koriste za rad sa serverom.
+ * Forme ne prave Zahtev niti kastuju odgovor, vec pozivaju domenski imenovane
+ * metode; greske se prijavljuju izuzetkom cija poruka stize sa servera.
  *
- * Forme ne prave Zahtev niti kastuju sirov Object iz odgovora, vec pozivaju
- * domenski imenovane metode ove klase. Sve greske se prijavljuju bacanjem
- * izuzetka, pa forma samo hvata Exception i prikazuje poruku. Poruka pritom
- * stize sa servera, sa mesta na kome je greska i nastala.
- *
- * Kriterijumi pretrage se serveru salju kao domenski objekti, a ne kao delovi
- * SQL upita - klijent ne poznaje ni tabele ni kolone baze.
+ * Kriterijumi pretrage se salju kao domenski objekti, ne kao delovi SQL upita
+ * - klijent ne poznaje tabele ni kolone baze.
  *
  * @author vukla
  */
@@ -119,8 +116,7 @@ public class Kontroler {
         kriterijum.setStatus(status);
         kriterijum.setPacijent(pacijent);
 
-        // usluga se prosledjuje kao stavka kriterijuma, jer je usluga sa
-        // terminom povezana upravo preko stavke
+        // usluga ide kao stavka kriterijuma, jer je tako povezana sa terminom
         if (usluga != null) {
             StavkaTermina stavka = new StavkaTermina();
             stavka.setUsluga(usluga);

@@ -43,20 +43,13 @@ import model.Termin;
 import model.Usluga;
 
 /**
- * Modalni dijalog za unos novog termina, odnosno za izmenu postojeceg.
+ * Modalni dijalog za unos novog termina, odnosno za izmenu postojeceg (ako je
+ * termin prosledjen u konstruktoru). Termin ima i listu stavki (usluga u
+ * kolicini), pa dijalog ima dva dela: gornji za podatke o terminu, donji za
+ * sastavljanje stavki.
  *
- * Ako je u konstruktoru prosledjen termin, dijalog radi u rezimu izmene,
- * u suprotnom kreira novi termin.
- *
- * Termin je slozen domenski objekat: pored sopstvenih podataka (pacijent,
- * datum, vreme, status, napomena) sadrzi i listu stavki, gde je svaka stavka
- * jedna usluga u odredjenoj kolicini. Zato dijalog ima dva dela: gornji, u kome
- * se unose podaci o samom terminu, i donji, u kome se sastavlja lista stavki.
- *
- * Stavke koje stomatolog dodaje u tabelu postoje samo u memoriji klijenta - u
- * bazu se ne upisuje nista dok se ne pozove pamcenje termina. Tek tada ceo
- * termin sa svojom listom stavki odlazi na server, gde jedna sistemska
- * operacija u jednoj transakciji upisuje i termin i sve njegove stavke.
+ * Stavke postoje samo u memoriji dok se ne pozove pamcenje termina - tada ceo
+ * termin sa stavkama odlazi na server i upisuje se u jednoj transakciji.
  *
  * @author vukla
  */
@@ -103,8 +96,7 @@ public class NoviTerminDijalog extends JDialog {
         ucitajListe();
         popuniPodatke();
 
-        // dijalog se pakuje tek kada su sve liste popunjene, jer se tek tada
-        // zna stvarna sirina komponenti - u suprotnom bi labele bile odsecene
+        // pakuje se tek kad su liste popunjene, da se zna stvarna sirina komponenti
         ogranicSirinu(cmbStomatolog);
         ogranicSirinu(cmbPacijent);
         ogranicSirinu(cmbUsluga);
@@ -138,8 +130,7 @@ public class NoviTerminDijalog extends JDialog {
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // stomatolog se ne bira - termin se uvek zakazuje kod ulogovanog, pa
-        // polje stoji prikazano ali onemoguceno, isto kao status pri unosu
+        // stomatolog je uvek ulogovani, polje samo prikazano
         cmbStomatolog = new JComboBox<>();
         cmbStomatolog.setRenderer(new RendererStomatologa());
         cmbStomatolog.setEnabled(false);
@@ -165,10 +156,8 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Pravi donji deo dijaloga, u kome se sastavlja lista usluga na terminu.
-     *
-     * Stomatolog bira uslugu i kolicinu i dugmetom je dodaje u tabelu, odnosno
-     * uklanja izabranu stavku iz tabele. Sve to se dogadja samo u memoriji.
+     * Pravi donji deo dijaloga: stomatolog bira uslugu i kolicinu i dugmetom
+     * dodaje/uklanja stavku u tabeli, sve u memoriji.
      */
     private JPanel napraviPanelStavki() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -223,8 +212,7 @@ public class NoviTerminDijalog extends JDialog {
         klizac.setPreferredSize(new Dimension(560, 150));
         panel.add(klizac, BorderLayout.CENTER);
 
-        // ukupan iznos termina je zbir iznosa svih stavki i menja se sa svakom
-        // dodatom, odnosno uklonjenom stavkom
+        // ukupan iznos se osvezava sa svakom izmenom stavki
         lblUkupno = new JLabel();
         lblUkupno.setFont(lblUkupno.getFont().deriveFont(Font.BOLD));
         JPanel panelUkupno = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
@@ -371,8 +359,7 @@ public class NoviTerminDijalog extends JDialog {
      */
     private void popuniPodatke() {
         if (!jeIzmena()) {
-            // status novog termina nije stvar izbora - svaki novi termin je
-            // zakazan, pa polje stoji prikazano ali onemoguceno
+            // novi termin je uvek zakazan, polje samo prikazano
             cmbStatus.setSelectedItem(StatusTermina.ZAKAZAN);
             cmbStatus.setEnabled(false);
             biracDatuma.setDate(LocalDate.now());
@@ -392,11 +379,8 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * U rezimu izmene puni tabelu stavkama koje termin vec ima u bazi.
-     *
-     * Stavke se prepisuju u nove objekte, da izmene u tabeli ne bi dirale
-     * termin koji glavna forma prikazuje u svojoj listi - ako stomatolog
-     * odustane od izmene, prikaz mora da ostane onakav kakav je bio.
+     * U rezimu izmene puni tabelu stavkama iz baze, prepisanim u nove objekte
+     * da izmena u tabeli ne bi dirala termin prikazan u listi glavne forme.
      */
     private void popuniStavke() {
         List<StavkaTermina> postojece = terminZaIzmenu.getStavke();
@@ -420,9 +404,8 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Bira zadato vreme u padajucoj listi. Ako postojeci termin nije zakazan
-     * na tacan slot od 15 minuta, njegovo vreme se dodaje u listu da ne bi
-     * bilo nehotice promenjeno prilikom izmene.
+     * Bira zadato vreme u listi; ako termin nije na tacan slot od 15 min,
+     * njegovo vreme se dodaje da ne bi bilo nehotice promenjeno.
      */
     private void izaberiVreme(LocalTime vreme) {
         if (vreme == null) {
@@ -470,10 +453,8 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Dodaje izabranu uslugu u zadatoj kolicini u tabelu stavki.
-     *
-     * Stavka se dodaje samo u memoriju - u bazu odlazi tek kada stomatolog
-     * pozove sistem da zapamti termin.
+     * Dodaje izabranu uslugu u zadatoj kolicini u tabelu - samo u memoriju, u
+     * bazu ide tek na pamcenje termina.
      */
     private void dodajStavku() {
         Usluga usluga = (Usluga) cmbUsluga.getSelectedItem();
@@ -513,16 +494,14 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Cita kolicinu iz spinera. Vrednost koju je korisnik otkucao, a nije je
-     * potvrdio pritiskom na Enter, spiner jos uvek drzi u polju za unos, pa se
-     * prvo prihvata izmena, a tek onda cita vrednost.
+     * Cita kolicinu iz spinera; ako korisnik nije potvrdio unos sa Enter, prvo
+     * se prihvata izmena, pa se tek onda cita vrednost.
      */
     private int procitajKolicinu() {
         try {
             spnKolicina.commitEdit();
         } catch (java.text.ParseException ex) {
-            // otkucan je neispravan tekst - spiner vraca poslednju ispravnu
-            // vrednost, pa se u polju prikazuje ona
+            // neispravan unos - spiner vraca poslednju ispravnu vrednost
             spnKolicina.setValue(spnKolicina.getValue());
         }
         return ((Number) spnKolicina.getValue()).intValue();
@@ -568,8 +547,7 @@ public class NoviTerminDijalog extends JDialog {
             return;
         }
 
-        // pri kreiranju je status uvek ZAKAZAN, bez obzira na stanje polja;
-        // pri izmeni ga korisnik bira (npr. OTKAZAN ili ODRZAN)
+        // pri kreiranju status je uvek ZAKAZAN; pri izmeni ga bira korisnik
         StatusTermina status = jeIzmena()
                 ? (StatusTermina) cmbStatus.getSelectedItem()
                 : StatusTermina.ZAKAZAN;
@@ -581,8 +559,7 @@ public class NoviTerminDijalog extends JDialog {
         Termin termin = new Termin(idTermin, datum, vreme, status, napomena,
                 Kontroler.getInstanca().getUlogovaniStomatolog(), pacijent);
 
-        // stavke se terminu dodaju onim redosledom kojim stoje u tabeli, a
-        // svaka zna kom terminu pripada
+        // stavke idu redosledom iz tabele, svaka zna svoj termin
         List<StavkaTermina> stavke = modelStavki.vratiStavke();
         for (StavkaTermina stavka : stavke) {
             stavka.setTermin(termin);
@@ -627,11 +604,7 @@ public class NoviTerminDijalog extends JDialog {
         return datum;
     }
 
-    /**
-     * Utvrdjuje da li zadati trenutak vec pripada proslosti. Za danasnji dan se
-     * poredi i vreme, jer termin koji je danas u devet ujutru u podne vise ne
-     * moze da se zakaze.
-     */
+    /** Utvrdjuje da li je trenutak vec prosao; za danasnji dan poredi i vreme. */
     private boolean jeUProslosti(LocalDate datum, LocalTime vreme) {
         LocalDate danas = LocalDate.now();
         if (datum.isBefore(danas)) {
@@ -641,10 +614,8 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Utvrdjuje da li su datum i vreme ostali onakvi kakve termin vec ima
-     * zapamcene. Takav termin se ne premesta, pa pravilo o proslosti za njega
-     * ne vazi - inace protekao termin ne bi mogao ni da se dopuni ni da mu se
-     * promeni status.
+     * Utvrdjuje da li su datum i vreme ostali isti kao u zapamcenom terminu -
+     * takav se ne premesta, pa pravilo o proslosti za njega ne vazi.
      */
     private boolean jeZadrzanPostojeciTermin(LocalDate datum, LocalTime vreme) {
         return jeIzmena()
@@ -653,9 +624,8 @@ public class NoviTerminDijalog extends JDialog {
     }
 
     /**
-     * Domenske klase nemaju toString, pa se prikaz u combo box-u resava
-     * rendererom. Renderer pacijenta je izdvojen u zasebnu klasu, jer ga
-     * koristi i pretraga na glavnoj formi.
+     * Domenske klase nemaju toString, pa prikaz u combo box-u resava renderer
+     * (Pacijent ima svoj, deljen sa pretragom na glavnoj formi).
      */
     private static class RendererUsluge extends DefaultListCellRenderer {
 

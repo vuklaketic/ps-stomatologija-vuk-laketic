@@ -9,14 +9,10 @@ import model.Usluga;
 import so.OpstaSistemskaOperacija;
 
 /**
- * Sistemska operacija koja vraca listu termina.
- *
- * Kao parametar dobija termin koji sluzi kao kriterijum pretrage. Svako
- * popunjeno polje kriterijuma sazuje pretragu, a polja koja su ostala prazna
- * se ne uzimaju u obzir: postavljen stomatolog ogranicava pretragu na njegove
- * termine, datum na jedan dan, status na jedno stanje, pacijent na termine
- * tog pacijenta, a usluga u stavci na termine na kojima je ta usluga
- * zakazana. Ako nijedno polje nije popunjeno, vracaju se svi termini.
+ * Sistemska operacija koja vraca listu termina. Termin prosledjen kao
+ * parametar sluzi kao kriterijum pretrage - svako popunjeno polje (stomatolog,
+ * datum, status, pacijent, usluga u stavci) suzava pretragu, a prazna se
+ * ignorisu, pa bez ijednog popunjenog polja vraca sve termine.
  *
  * @author vukla
  */
@@ -53,12 +49,9 @@ public class VratiListuTerminaSO extends OpstaSistemskaOperacija {
     }
 
     /**
-     * Sastavlja WHERE klauzu od popunjenih polja kriterijuma.
-     *
-     * Uslov se sastavlja ovde, na serveru, jer klijent ne poznaje ni tabele ni
-     * kolone baze. U upit ulaze samo datum, naziv statusa i identifikatori -
-     * dakle vrednosti koje po tipu ne mogu da sadrze apostrof, pa ovde nema
-     * mesta za ubacivanje tudjeg SQL koda.
+     * Sastavlja WHERE klauzu od popunjenih polja kriterijuma. Sastavlja se
+     * ovde jer klijent ne poznaje tabele ni kolone baze; ulaze samo datum,
+     * status i identifikatori, koji po tipu ne mogu sadrzati apostrof.
      *
      * @return WHERE klauza sa vodecim razmakom, ili prazan string ako nijedno
      * polje kriterijuma nije popunjeno
@@ -79,9 +72,7 @@ public class VratiListuTerminaSO extends OpstaSistemskaOperacija {
             uslovi.add("termin.idPacijent = " + kriterijum.getPacijent().getIdPacijent());
         }
 
-        // usluga se trazi u stavkama termina, jer termin nije direktno vezan za
-        // uslugu; podupit proverava postojanje stavke sa tom uslugom, pa termin
-        // sa vise stavki ostaje jedan red u rezultatu
+        // podupit nad stavkama, da termin sa vise stavki ostane jedan red
         Usluga usluga = vratiUsluguKriterijuma(kriterijum);
         if (usluga != null) {
             uslovi.add("EXISTS (SELECT 1 FROM stavkatermina"
@@ -96,10 +87,8 @@ public class VratiListuTerminaSO extends OpstaSistemskaOperacija {
     }
 
     /**
-     * Vraca uslugu po kojoj se pretrazuje, ako je zadata.
-     *
-     * Klijent uslugu salje kao stavku kriterijuma, jer je usluga sa terminom
-     * povezana upravo preko stavke.
+     * Vraca uslugu po kojoj se pretrazuje, koju klijent salje kao stavku
+     * kriterijuma.
      *
      * @return usluga iz prve stavke kriterijuma ili null ako usluga nije zadata
      */
@@ -115,11 +104,7 @@ public class VratiListuTerminaSO extends OpstaSistemskaOperacija {
         return null;
     }
 
-    /**
-     * Ucitava stavke jednog termina. Stavke se citaju posebnim upitom, jer je
-     * termin prema stavci u odnosu jedan prema vise, pa bi jedan spojeni upit
-     * umnozio redove termina.
-     */
+    /** Ucitava stavke termina posebnim upitom, da spojeni upit ne bi umnozio redove termina. */
     private void ucitajStavke(Termin termin) throws Exception {
         String uslov = StavkaTermina.SPOJEVI
                 + " WHERE stavkatermina.idTermin = " + termin.getIdTermin()

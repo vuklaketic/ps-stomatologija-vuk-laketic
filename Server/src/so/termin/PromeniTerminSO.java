@@ -11,21 +11,9 @@ import model.Usluga;
 import so.OpstaSistemskaOperacija;
 
 /**
- * Sistemska operacija izmene postojeceg termina.
- *
- * Stavke se ne brisu i ne ubacuju ponovo. Umesto toga se stanje stavki u bazi
- * poredi sa stanjem koje je stiglo sa forme, pa se za svaku stavku poziva samo
- * ona operacija koja joj odgovara: stavka koje na formi vise nema se brise,
- * stavka kojoj je promenjena kolicina ili cena se menja, a usluga koje u bazi
- * nije bilo se dodaje. Stavke koje su ostale iste se ne diraju.
- *
- * Stavka se prepoznaje po usluzi, jer je usluga ono sto stavku razlikuje u
- * okviru jednog termina - ista usluga se u istom terminu ne moze pojaviti dva
- * puta, vec se unosi u vecoj kolicini. Redni broj se za tu svrhu ne koristi:
- * on je deo primarnog kljuca stavke i zato ostaje nepromenjen dok stavka
- * postoji, pa uklanjanje jedne stavke ne izaziva izmenu svih ostalih.
- *
- * Sve operacije se izvrsavaju u jednoj transakciji, koju vodi
+ * Sistemska operacija izmene postojeceg termina. Stavke se ne brisu i ne
+ * ubacuju ponovo - porede se sa stanjem u bazi i za svaku se poziva samo
+ * odgovarajuca operacija (obrisi/izmeni/dodaj). Transakciju vodi
  * {@link OpstaSistemskaOperacija}.
  *
  * @author vukla
@@ -63,8 +51,7 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
         if (termin.getStavke() == null || termin.getStavke().isEmpty()) {
             throw new Exception("Termin mora imati bar jednu uslugu.");
         }
-        // stavka se prepoznaje po usluzi, pa ista usluga ne sme da se pojavi
-        // dva puta - u tom slucaju se unosi jedna stavka u vecoj kolicini
+        // ista usluga ne sme dva puta u jednom terminu
         List<Integer> videneUsluge = new ArrayList<>();
         for (StavkaTermina stavka : termin.getStavke()) {
             if (stavka.getUsluga() == null || stavka.getUsluga().getIdUsluga() <= 0) {
@@ -94,19 +81,10 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
     }
 
     /**
-     * Proverava da li je stomatolog slobodan za termin onakav kakav je posle
-     * izmene.
-     *
-     * Ne poredi se samo pocetno vreme, jer termin traje onoliko koliko traju
-     * usluge na njemu: termin u osam sati sa uslugama od ukupno devedeset
-     * minuta zauzima vreme sve do pola deset, pa u tom rasponu ne moze da stane
-     * jos jedan. Dva termina se preklapaju kada svaki od njih pocinje pre nego
-     * sto se onaj drugi zavrsi. Termini koji se nadovezuju - jedan pocinje
-     * tacno kada se drugi zavrsi - nisu preklapanje, pa se porede strogim
-     * nejednakostima.
-     *
-     * Sam termin koji se menja se ne racuna, a otkazani termini se izostavljaju,
-     * jer je njihovo vreme ponovo slobodno.
+     * Proverava da li je stomatolog slobodan za termin posle izmene, poredeci
+     * intervale trajanja (ne samo pocetno vreme) - termini koji se nadovezuju
+     * nisu preklapanje. Sam termin koji se menja i otkazani termini se
+     * izostavljaju.
      */
     private void proveriZauzetost(Termin termin) throws Exception {
         LocalDateTime pocetakIzmenjenog = LocalDateTime.of(termin.getDatum(), termin.getVreme());
@@ -134,11 +112,8 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
     }
 
     /**
-     * Racuna koliko traje termin onakav kakav je stigao sa forme. Svaka stavka
-     * traje onoliko koliko traje njena usluga puta kolicina - dve plombe se ne
-     * rade u vremenu jedne - po istom pravilu po kome se i iznos stavke racuna
-     * iz kolicine i cene. Trajanje se cita iz sifarnika, a ne preuzima sa
-     * klijenta, isto kao i cena usluge.
+     * Racuna trajanje termina kao zbir (trajanje usluge x kolicina) po
+     * stavkama, isto kao i iznos. Cita se iz sifarnika, ne sa klijenta.
      */
     private int trajanjeIzmenjenogTermina(Termin termin) throws Exception {
         int trajanje = 0;
@@ -149,10 +124,8 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
     }
 
     /**
-     * Racuna koliko traje termin koji je vec zapamcen, po istom pravilu -
-     * trajanje usluge puta kolicina, sabrano po stavkama. Njegove stavke se
-     * citaju iz baze zajedno sa uslugom, pa je i trajanje procitano iz
-     * sifarnika.
+     * Isto sto i {@link #trajanjeIzmenjenogTermina}, za termin koji je vec
+     * zapamcen.
      */
     private int trajanjePostojecegTermina(Termin postojeci) throws Exception {
         int trajanje = 0;
@@ -187,8 +160,7 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
         List<StavkaTermina> stareStavke = ucitajStavke(termin);
         List<StavkaTermina> noveStavke = termin.getStavke();
 
-        // stavke koje su ostale i posle izmene - njihov redni broj se zadrzava,
-        // a nove stavke se nastavljaju na najveci od njih
+        // redni broj postojecih stavki se zadrzava
         List<StavkaTermina> preostale = new ArrayList<>();
 
         // 1. obrisane stavke - postoje u bazi, a na formi ih vise nema
@@ -200,14 +172,11 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
             }
         }
 
-        // 2. izmenjene stavke - ista usluga, ali druga kolicina ili cena;
-        // stavka koja je ostala ista se ne dira
+        // 2. izmenjene stavke - ista usluga, ali druga kolicina ili cena
         for (StavkaTermina stara : preostale) {
             StavkaTermina nova = pronadjiPoUsluzi(noveStavke, stara.getUsluga());
             nova.setTermin(termin);
             nova.setRb(stara.getRb());
-            // cena usluge i iznos su vezani za sifarnik usluga, pa se ne
-            // preuzimaju onakvi kakvi su stigli sa klijenta
             nova.setCenaUsluge(vratiCenuUsluge(nova));
             nova.izracunajIznos();
             if (jeIzmenjena(stara, nova)) {

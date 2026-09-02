@@ -30,8 +30,16 @@ public class PromeniPacijentSO extends OpstaSistemskaOperacija {
         if (pacijent.getIme() == null || pacijent.getIme().trim().isEmpty()) {
             throw new Exception("Pacijent mora imati ime.");
         }
+        if (pacijent.getIme().trim().length() > UbaciPacijentSO.MAX_DUZINA_IMENA) {
+            throw new Exception("Ime ne sme imati više od "
+                    + UbaciPacijentSO.MAX_DUZINA_IMENA + " znakova.");
+        }
         if (pacijent.getPrezime() == null || pacijent.getPrezime().trim().isEmpty()) {
             throw new Exception("Pacijent mora imati prezime.");
+        }
+        if (pacijent.getPrezime().trim().length() > UbaciPacijentSO.MAX_DUZINA_PREZIMENA) {
+            throw new Exception("Prezime ne sme imati više od "
+                    + UbaciPacijentSO.MAX_DUZINA_PREZIMENA + " znakova.");
         }
         if (pacijent.getBrojTelefona() == null || pacijent.getBrojTelefona().trim().isEmpty()) {
             throw new Exception("Pacijent mora imati broj telefona.");

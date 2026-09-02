@@ -14,6 +14,10 @@ public class UbaciPacijentSO extends OpstaSistemskaOperacija {
     /** Broj knjizice mora da ima tacno ovoliko znakova. */
     public static final int DUZINA_BROJA_KNJIZICE = 11;
 
+    /** Ime i prezime ne smeju biti duzi od kolone u bazi (VARCHAR(50)). */
+    public static final int MAX_DUZINA_IMENA = 50;
+    public static final int MAX_DUZINA_PREZIMENA = 50;
+
     private Pacijent zapamceni;
 
     public Pacijent getZapamceni() {
@@ -30,8 +34,16 @@ public class UbaciPacijentSO extends OpstaSistemskaOperacija {
         if (pacijent.getIme() == null || pacijent.getIme().trim().isEmpty()) {
             throw new Exception("Pacijent mora imati ime.");
         }
+        if (pacijent.getIme().trim().length() > MAX_DUZINA_IMENA) {
+            throw new Exception("Ime ne sme imati više od "
+                    + MAX_DUZINA_IMENA + " znakova.");
+        }
         if (pacijent.getPrezime() == null || pacijent.getPrezime().trim().isEmpty()) {
             throw new Exception("Pacijent mora imati prezime.");
+        }
+        if (pacijent.getPrezime().trim().length() > MAX_DUZINA_PREZIMENA) {
+            throw new Exception("Prezime ne sme imati više od "
+                    + MAX_DUZINA_PREZIMENA + " znakova.");
         }
         if (pacijent.getBrojTelefona() == null || pacijent.getBrojTelefona().trim().isEmpty()) {
             throw new Exception("Pacijent mora imati broj telefona.");

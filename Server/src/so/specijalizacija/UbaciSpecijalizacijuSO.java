@@ -12,6 +12,9 @@ import util.SqlUtil;
  */
 public class UbaciSpecijalizacijuSO extends OpstaSistemskaOperacija {
 
+    /** Naziv ne sme biti duzi od kolone u bazi (VARCHAR(100)). */
+    public static final int MAX_DUZINA_NAZIVA = 100;
+
     private Specijalizacija zapamcena;
 
     public Specijalizacija getZapamcena() {
@@ -27,6 +30,10 @@ public class UbaciSpecijalizacijuSO extends OpstaSistemskaOperacija {
         Specijalizacija specijalizacija = (Specijalizacija) objekat;
         if (specijalizacija.getNaziv() == null || specijalizacija.getNaziv().trim().isEmpty()) {
             throw new Exception("Specijalizacija mora imati naziv.");
+        }
+        if (specijalizacija.getNaziv().trim().length() > MAX_DUZINA_NAZIVA) {
+            throw new Exception("Naziv specijalizacije ne sme imati više od "
+                    + MAX_DUZINA_NAZIVA + " znakova.");
         }
 
         // naziv je ono po cemu se specijalizacija prepoznaje, pa dve

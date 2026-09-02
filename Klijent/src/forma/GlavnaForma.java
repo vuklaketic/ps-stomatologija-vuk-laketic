@@ -613,7 +613,7 @@ public class GlavnaForma extends JFrame {
                 + "Seminarski rad iz predmeta Projektovanje softvera\n"
                 + "Fakultet organizacionih nauka, Beograd\n\n"
                 + "Student: Vuk Laketić, 2023-0013\n"
-                + "Mentor: prof. dr Siniša Vlajić",
+                + "Mentor: Dragica S. Ljubisavljević",
                 "O programu", JOptionPane.INFORMATION_MESSAGE);
     }
 

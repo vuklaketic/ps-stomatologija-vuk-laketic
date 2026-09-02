@@ -1,5 +1,6 @@
 package so.termin;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import model.ApstraktniDomenskiObjekat;
@@ -89,19 +90,92 @@ public class PromeniTerminSO extends OpstaSistemskaOperacija {
             throw new Exception("Termin koji se menja ne postoji u bazi.");
         }
 
-        // poslovno pravilo: isti stomatolog ne moze da ima dva termina koja nisu
-        // otkazana u istom danu i u isto vreme - sam termin se ne racuna
-        String uslovZauzetost = Termin.SPOJEVI
+        proveriZauzetost(termin);
+    }
+
+    /**
+     * Proverava da li je stomatolog slobodan za termin onakav kakav je posle
+     * izmene.
+     *
+     * Ne poredi se samo pocetno vreme, jer termin traje onoliko koliko traju
+     * usluge na njemu: termin u osam sati sa uslugama od ukupno devedeset
+     * minuta zauzima vreme sve do pola deset, pa u tom rasponu ne moze da stane
+     * jos jedan. Dva termina se preklapaju kada svaki od njih pocinje pre nego
+     * sto se onaj drugi zavrsi. Termini koji se nadovezuju - jedan pocinje
+     * tacno kada se drugi zavrsi - nisu preklapanje, pa se porede strogim
+     * nejednakostima.
+     *
+     * Sam termin koji se menja se ne racuna, a otkazani termini se izostavljaju,
+     * jer je njihovo vreme ponovo slobodno.
+     */
+    private void proveriZauzetost(Termin termin) throws Exception {
+        LocalDateTime pocetakIzmenjenog = LocalDateTime.of(termin.getDatum(), termin.getVreme());
+        LocalDateTime krajIzmenjenog =
+                pocetakIzmenjenog.plusMinutes(trajanjeIzmenjenogTermina(termin));
+
+        String uslov = Termin.SPOJEVI
                 + " WHERE termin.idStomatolog = " + termin.getStomatolog().getIdStomatolog()
                 + " AND termin.datum = '" + termin.getDatum() + "'"
-                + " AND termin.vreme = '" + termin.getVreme() + "'"
                 + " AND termin.status <> '" + StatusTermina.OTKAZAN.name() + "'"
                 + " AND termin.idTermin <> " + termin.getIdTermin();
 
-        if (!broker.vratiPoUpitu(new Termin(), uslovZauzetost).isEmpty()) {
-            throw new Exception("Stomatolog već ima zakazan termin "
-                    + termin.getDatum() + " u " + termin.getVreme() + ".");
+        for (ApstraktniDomenskiObjekat ado : broker.vratiPoUpitu(new Termin(), uslov)) {
+            Termin postojeci = (Termin) ado;
+
+            LocalDateTime pocetak = LocalDateTime.of(postojeci.getDatum(), postojeci.getVreme());
+            LocalDateTime kraj = pocetak.plusMinutes(trajanjePostojecegTermina(postojeci));
+
+            if (pocetakIzmenjenog.isBefore(kraj) && pocetak.isBefore(krajIzmenjenog)) {
+                throw new Exception("Stomatolog već ima zakazan termin koji se preklapa"
+                        + " sa izabranim terminom (" + postojeci.getDatum()
+                        + " u " + postojeci.getVreme() + ").");
+            }
         }
+    }
+
+    /**
+     * Racuna koliko traje termin onakav kakav je stigao sa forme. Svaka stavka
+     * traje onoliko koliko traje njena usluga puta kolicina - dve plombe se ne
+     * rade u vremenu jedne - po istom pravilu po kome se i iznos stavke racuna
+     * iz kolicine i cene. Trajanje se cita iz sifarnika, a ne preuzima sa
+     * klijenta, isto kao i cena usluge.
+     */
+    private int trajanjeIzmenjenogTermina(Termin termin) throws Exception {
+        int trajanje = 0;
+        for (StavkaTermina stavka : termin.getStavke()) {
+            trajanje += stavka.getKolicina() * vratiTrajanjeUsluge(stavka);
+        }
+        return trajanje;
+    }
+
+    /**
+     * Racuna koliko traje termin koji je vec zapamcen, po istom pravilu -
+     * trajanje usluge puta kolicina, sabrano po stavkama. Njegove stavke se
+     * citaju iz baze zajedno sa uslugom, pa je i trajanje procitano iz
+     * sifarnika.
+     */
+    private int trajanjePostojecegTermina(Termin postojeci) throws Exception {
+        int trajanje = 0;
+        for (StavkaTermina stavka : ucitajStavke(postojeci)) {
+            trajanje += stavka.getKolicina() * stavka.getUsluga().getTrajanje();
+        }
+        return trajanje;
+    }
+
+    /**
+     * Cita trajanje usluge iz sifarnika, po uzoru na citanje cene.
+     */
+    private int vratiTrajanjeUsluge(StavkaTermina stavka) throws Exception {
+        String uslov = " WHERE usluga.idUsluga = " + stavka.getUsluga().getIdUsluga();
+        Usluga usluga = (Usluga) broker.vratiObjekat(new Usluga(), uslov);
+
+        if (usluga == null) {
+            throw new Exception("Usluga sa stavke termina ne postoji u bazi.");
+        }
+        if (usluga.getTrajanje() <= 0) {
+            throw new Exception("Trajanje usluge mora biti veće od nule.");
+        }
+        return usluga.getTrajanje();
     }
 
     @Override

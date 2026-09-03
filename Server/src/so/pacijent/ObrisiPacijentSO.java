@@ -6,11 +6,9 @@ import model.Termin;
 import so.OpstaSistemskaOperacija;
 
 /**
- * Sistemska operacija brisanja pacijenta.
- *
- * Pacijent koji ima zakazane termine ne moze da se obrise, jer bi termin ostao
- * bez pacijenta. Isto pravilo cuva i strani kljuc u bazi, pa se i njegovo
- * krsenje prevodi u istu poruku.
+ * Sistemska operacija brisanja pacijenta. Pacijent koji ima zakazane termine
+ * ne moze da se obrise (termin bi ostao bez pacijenta); isto cuva i strani
+ * kljuc u bazi, pa se i njegovo krsenje prevodi u istu poruku.
  *
  * @author vukla
  */

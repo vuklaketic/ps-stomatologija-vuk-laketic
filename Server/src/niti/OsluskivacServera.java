@@ -1,11 +1,9 @@
 package niti;
 
 /**
- * Osluskivac dogadjaja na serveru.
- *
- * Sluzi da serverske niti javljaju sta se desava (pokretanje, povezivanje
- * klijenta, prekid veze) bez direktne zavisnosti od korisnickog interfejsa.
- * Implementira ga serverska forma i ispisuje poruke u svom statusnom prozoru.
+ * Osluskivac dogadjaja na serveru - serverske niti njime javljaju sta se
+ * desava (pokretanje, povezivanje, prekid) bez zavisnosti od UI-ja. Implementira
+ * ga serverska forma, koja poruke ispisuje u svom statusnom prozoru.
  *
  * @author vukla
  */

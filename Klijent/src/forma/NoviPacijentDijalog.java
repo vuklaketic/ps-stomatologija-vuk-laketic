@@ -20,10 +20,8 @@ import model.Ordinacija;
 import model.Pacijent;
 
 /**
- * Modalni dijalog za unos novog pacijenta, odnosno za izmenu postojeceg.
- *
- * Ako je u konstruktoru prosledjen pacijent, dijalog radi u rezimu izmene, u
- * suprotnom kreira novog pacijenta.
+ * Modalni dijalog za unos novog pacijenta, odnosno za izmenu postojeceg (ako
+ * je pacijent prosledjen u konstruktoru).
  *
  * @author vukla
  */
@@ -55,8 +53,7 @@ public class NoviPacijentDijalog extends JDialog {
         ucitajOrdinacije();
         popuniPodatke();
 
-        // dijalog se pakuje tek kada je lista ordinacija popunjena, jer se tek
-        // tada zna stvarna sirina komponenti
+        // pakuje se tek kad je lista ordinacija popunjena, da se zna stvarna sirina
         ogranicSirinu(cmbOrdinacija);
         pack();
         setLocationRelativeTo(roditeljskaForma);
@@ -213,9 +210,7 @@ public class NoviPacijentDijalog extends JDialog {
                 Kontroler.getInstanca().ubaciPacijenta(pacijent);
             }
         } catch (Exception ex) {
-            // dijalog ostaje otvoren da korisnik moze da ispravi podatke;
-            // poruka stize sa mesta na kome je greska nastala, pa se prikazuje
-            // onakva kakva jeste i ne dodaje joj se jos jedna recenica
+            // dijalog ostaje otvoren da korisnik ispravi podatke; poruka stize sa servera
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
             return;

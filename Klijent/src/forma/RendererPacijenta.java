@@ -6,11 +6,8 @@ import javax.swing.JList;
 import model.Pacijent;
 
 /**
- * Prikaz pacijenta u padajucoj listi.
- *
- * Domenske klase nemaju toString, pa se prikaz resava rendererom. Stavke koje
- * nisu pacijent (na primer tekst "Svi" u pretrazi) prikazuju se onako kako ih
- * prikazuje podrazumevani renderer.
+ * Prikaz pacijenta u padajucoj listi. Domenske klase nemaju toString, pa
+ * prikaz resava renderer; ostale stavke (npr. "Svi") idu kroz podrazumevani.
  *
  * @author vukla
  */

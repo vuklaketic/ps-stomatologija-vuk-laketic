@@ -12,11 +12,8 @@ import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.InsetsUIResource;
 
 /**
- * Podesavanje izgleda korisnickog interfejsa.
- *
- * Postavlja FlatLaf temu, malo veci font i razmake koji vaze za sve forme, pa
- * pojedinacne forme ne moraju da se bave bojama i fontovima. Poziva se jednom,
- * na pocetku metode main, pre nego sto se napravi prva forma.
+ * Podesavanje izgleda korisnickog interfejsa - FlatLaf tema, veci font i
+ * razmaci za sve forme. Poziva se jednom, na pocetku main, pre prve forme.
  *
  * @author vukla
  */
@@ -39,8 +36,7 @@ public class Izgled {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (Exception ex) {
-            // ako tema ne moze da se ucita, aplikacija nastavlja da radi
-            // sa podrazumevanim izgledom
+            // ako tema ne moze da se ucita, aplikacija nastavlja sa podrazumevanim izgledom
             logger.log(Level.WARNING, "Tema nije primenjena, koristi se podrazumevani izgled.", ex);
         }
 
@@ -52,8 +48,7 @@ public class Izgled {
         UIManager.put("TextComponent.arc", 6);
         UIManager.put("Button.margin", new InsetsUIResource(6, 14, 6, 14));
 
-        // dugmad u dijalozima idu na srpskom, bez obzira na to koji je jezik
-        // podesen na operativnom sistemu
+        // dugmad u dijalozima su na srpskom, bez obzira na jezik operativnog sistema
         UIManager.put("OptionPane.okButtonText", "U redu");
         UIManager.put("OptionPane.yesButtonText", "Da");
         UIManager.put("OptionPane.noButtonText", "Ne");

@@ -6,12 +6,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * Pravi birac datuma sa padajucim kalendarom.
- *
- * Datum se bira iskljucivo klikom u kalendaru - rucno kucanje je iskljuceno,
- * pa u polje ne moze da dospe neispravan datum i nema potrebe za proverom
- * formata. Kalendar se otvara i klikom na samo polje, ne samo na dugme pored
- * njega.
+ * Pravi birac datuma sa padajucim kalendarom. Datum se bira iskljucivo klikom
+ * (rucno kucanje je iskljuceno, pa nema neispravnih datuma); kalendar se
+ * otvara i klikom na samo polje, ne samo na dugme pored njega.
  *
  * @author vukla
  */

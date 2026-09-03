@@ -1,12 +1,10 @@
 package util;
 
 /**
- * Pomocne metode za sastavljanje SQL upita.
- *
- * Domenske klase vrednosti za INSERT i UPDATE sastavljaju nadovezivanjem
- * stringova, pa svaka tekstualna vrednost mora da se pripremi pre nego sto se
- * ugradi u upit. Bez toga apostrof u imenu ili napomeni prekida string literal
- * i upit puca, a u gorem slucaju omogucava ubacivanje tudjeg SQL koda.
+ * Pomocne metode za sastavljanje SQL upita. Domenske klase vrednosti za
+ * INSERT/UPDATE sastavljaju nadovezivanjem stringova, pa svaka tekstualna
+ * vrednost mora da se pripremi - inace apostrof puca upit ili omogucava
+ * ubacivanje tudjeg SQL koda.
  *
  * @author vukla
  */

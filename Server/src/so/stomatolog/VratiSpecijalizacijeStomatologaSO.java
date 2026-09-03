@@ -8,11 +8,9 @@ import model.Stomatolog;
 import so.OpstaSistemskaOperacija;
 
 /**
- * Sistemska operacija koja vraca specijalizacije jednog stomatologa.
- *
- * Kao parametar dobija stomatologa cije se specijalizacije traze, a citaju se
- * spajanjem tabele specijalizacija sa veznom tabelom stspec. Stomatolog koji
- * nema nijednu specijalizaciju nije greska - za njega se vraca prazna lista.
+ * Sistemska operacija koja vraca specijalizacije jednog stomatologa, citane
+ * spajanjem tabele specijalizacija sa veznom tabelom stspec. Stomatolog bez
+ * specijalizacije nije greska - vraca se prazna lista.
  *
  * @author vukla
  */

@@ -16,10 +16,8 @@ import kontroler.Kontroler;
 import model.Specijalizacija;
 
 /**
- * Modalni dijalog za unos nove specijalizacije.
- *
- * Specijalizaciju opisuje samo njen naziv, pa forma ima jedno polje. Slucaj
- * koriscenja trazi samo ubacivanje, tako da dijalog ne poznaje rezim izmene.
+ * Modalni dijalog za unos nove specijalizacije - samo naziv, pa forma ima
+ * jedno polje; slucaj koriscenja trazi samo ubacivanje, bez rezima izmene.
  *
  * @author vukla
  */
@@ -93,9 +91,7 @@ public class NovaSpecijalizacijaDijalog extends JDialog {
         try {
             Kontroler.getInstanca().ubaciSpecijalizaciju(new Specijalizacija(0, naziv));
         } catch (Exception ex) {
-            // dijalog ostaje otvoren da korisnik moze da ispravi naziv; poruka
-            // stize sa mesta na kome je greska nastala, pa se prikazuje onakva
-            // kakva jeste
+            // dijalog ostaje otvoren da korisnik ispravi naziv; poruka stize sa servera
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Greška", JOptionPane.ERROR_MESSAGE);
             return;

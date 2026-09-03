@@ -7,11 +7,9 @@ package komunikacija;
 import java.io.Serializable;
 
 /**
- * Odgovor servera na jedan zahtev klijenta.
- *
- * Pored samog rezultata nosi i tip odgovora, kao i izuzetak koji je nastao na
- * serveru. Zahvaljujuci tome klijent moze da prikaze konkretnu poruku greske
- * umesto uopstene, jer poruka stize sa mesta na kome je greska i nastala.
+ * Odgovor servera na jedan zahtev klijenta - pored rezultata nosi tip
+ * odgovora i izuzetak nastao na serveru, pa klijent prikazuje konkretnu
+ * poruku greske.
  *
  * @author vukla
  */
@@ -30,16 +28,10 @@ public class Odgovor implements Serializable {
         this.izuzetak = izuzetak;
     }
 
-    /**
-     * Pravi odgovor koji oznacava uspesno izvrsenu operaciju.
-     */
     public static Odgovor uspeh(Object odgovor) {
         return new Odgovor(TipOdgovora.USPEH, odgovor, null);
     }
 
-    /**
-     * Pravi odgovor koji oznacava da operacija nije uspela.
-     */
     public static Odgovor greska(Exception izuzetak) {
         return new Odgovor(TipOdgovora.GRESKA, null, izuzetak);
     }

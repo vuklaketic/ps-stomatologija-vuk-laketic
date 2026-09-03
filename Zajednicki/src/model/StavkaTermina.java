@@ -38,11 +38,8 @@ public class StavkaTermina implements ApstraktniDomenskiObjekat {
     }
 
     /**
-     * Racuna iznos stavke kao proizvod kolicine i cene usluge.
-     *
-     * Iznos je izvedena vrednost, pa se nikada ne unosi rucno: racuna ga forma
-     * dok se stavka unosi, a sistemska operacija ponovo pre upisa u bazu, da
-     * bi zapamcena vrednost uvek odgovarala kolicini i ceni.
+     * Racuna iznos kao proizvod kolicine i cene - izvedena vrednost, nikad
+     * rucno uneta: racuna je forma pri unosu, i sistemska operacija pre upisa.
      */
     public void izracunajIznos() {
         this.iznos = kolicina * cenaUsluge;

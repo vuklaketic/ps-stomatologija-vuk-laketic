@@ -58,10 +58,7 @@ public class StSpec implements ApstraktniDomenskiObjekat {
         return "stspec";
     }
 
-    /**
-     * Stomatolog i specijalizacija se kreiraju samo sa identifikatorom, jer upit
-     * cita iskljucivo kolone tabele stspec.
-     */
+    /** Stomatolog i specijalizacija se prave samo sa identifikatorom, jer upit cita samo kolone tabele stspec. */
     @Override
     public List<ApstraktniDomenskiObjekat> vratiListu(ResultSet rs) throws Exception {
         List<ApstraktniDomenskiObjekat> lista = new ArrayList<>();

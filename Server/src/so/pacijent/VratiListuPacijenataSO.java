@@ -9,11 +9,9 @@ import util.SqlUtil;
 
 /**
  * Sistemska operacija koja vraca listu pacijenata sa njihovim ordinacijama.
- *
- * Kao parametar moze da dobije pacijenta koji sluzi kao kriterijum pretrage.
- * Popunjeno ime ili prezime trazi se kao deo imena, a postavljena ordinacija
- * ogranicava pretragu na pacijente te ordinacije. Ako parametar nije prosledjen
- * ili nijedno polje nije popunjeno, vracaju se svi pacijenti.
+ * Pacijent prosledjen kao parametar sluzi kao kriterijum: ime/prezime se
+ * traze kao deo imena, ordinacija ogranicava na tu ordinaciju; bez zadatog
+ * kriterijuma vracaju se svi pacijenti.
  *
  * @author vukla
  */

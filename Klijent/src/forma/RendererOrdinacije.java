@@ -6,11 +6,8 @@ import javax.swing.JList;
 import model.Ordinacija;
 
 /**
- * Prikaz ordinacije u padajucoj listi.
- *
- * Domenske klase nemaju toString, pa se prikaz resava rendererom. Stavke koje
- * nisu ordinacija (na primer tekst "Sve" u pretrazi) prikazuju se onako kako
- * ih prikazuje podrazumevani renderer.
+ * Prikaz ordinacije u padajucoj listi. Domenske klase nemaju toString, pa
+ * prikaz resava renderer; ostale stavke (npr. "Sve") idu kroz podrazumevani.
  *
  * @author vukla
  */

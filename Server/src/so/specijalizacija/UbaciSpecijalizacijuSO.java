@@ -36,8 +36,7 @@ public class UbaciSpecijalizacijuSO extends OpstaSistemskaOperacija {
                     + MAX_DUZINA_NAZIVA + " znakova.");
         }
 
-        // naziv je ono po cemu se specijalizacija prepoznaje, pa dve
-        // specijalizacije ne mogu da nose isti naziv
+        // naziv je ono po cemu se specijalizacija prepoznaje, ne sme se ponoviti
         String uslov = " WHERE specijalizacija.naziv = '"
                 + SqlUtil.escapiraj(specijalizacija.getNaziv().trim()) + "'";
         if (broker.vratiObjekat(new Specijalizacija(), uslov) != null) {

@@ -81,11 +81,7 @@ public class ObradaZahteva extends Thread {
         zatvoriVezu();
     }
 
-    /**
-     * Izvrsava operaciju iz zahteva. Ako operacija ne uspe, izuzetak se ne gubi
-     * vec se pakuje u odgovor, pa klijent prikazuje poruku koja je nastala na
-     * mestu greske.
-     */
+    /** Izvrsava operaciju iz zahteva; ako ne uspe, izuzetak se pakuje u odgovor, pa klijent vidi poruku sa mesta greske. */
     private Odgovor obradiZahtev(Zahtev zahtev) {
         Operacija operacija = zahtev.getOperacija();
         Object parametar = zahtev.getParametar();
@@ -161,9 +157,6 @@ public class ObradaZahteva extends Thread {
         }
     }
 
-    /**
-     * Prekida obradu i zatvara vezu sa klijentom.
-     */
     public void prekiniObradu() {
         kraj = true;
         zatvoriVezu();

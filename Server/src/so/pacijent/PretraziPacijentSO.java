@@ -5,11 +5,8 @@ import so.OpstaSistemskaOperacija;
 
 /**
  * Sistemska operacija koja pronalazi jednog pacijenta po identifikatoru.
- *
- * Scenariji slucajeva koriscenja nad pacijentom razlikuju dva koraka: prvo se
- * po zadatim kriterijumima vrati lista pacijenata, a zatim se za pacijenta
- * koga je stomatolog izabrao traze njegovi podaci. Ovu drugu radnju obavlja
- * ova operacija.
+ * Scenariji nad pacijentom razlikuju listu po kriterijumima od trazenja
+ * jednog, izabranog pacijenta - ovu drugu radnju obavlja ova operacija.
  *
  * @author vukla
  */

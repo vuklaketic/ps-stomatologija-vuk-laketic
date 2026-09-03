@@ -18,12 +18,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 /**
- * Modalni dijalog za podesavanje parametara konekcije sa bazom podataka.
- *
- * Polja se pune vrednostima koje server trenutno koristi. Dugme "Sačuvaj"
- * upisuje unete vrednosti u fajl {@code baza.properties} i odmah ponovo
- * uspostavlja konekciju, pa nema potrebe za ponovnim pokretanjem aplikacije
- * ni za rucnim menjanjem fajla.
+ * Modalni dijalog za podesavanje parametara konekcije sa bazom. Polja se pune
+ * trenutnim vrednostima; "Sačuvaj" upisuje ih u {@code baza.properties} i
+ * odmah ponovo uspostavlja konekciju, bez restarta aplikacije.
  *
  * @author vukla
  */
@@ -141,8 +138,7 @@ public class FormaKonfBaza extends JDialog {
 
         roditeljskaForma.zabelezi("Sačuvana su nova podešavanja baze: " + url);
 
-        // podesavanja su vec upisana, pa se neuspela veza prijavljuje kao
-        // upozorenje - korisnik moze da ispravi podatke i pokusa ponovo
+        // podesavanja su vec upisana, pa neuspela veza ide kao upozorenje
         try {
             Konekcija.getInstanca().ponovoUspostaviKonekciju();
         } catch (Exception ex) {

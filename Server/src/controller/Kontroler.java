@@ -25,15 +25,12 @@ import so.termin.VratiListuTerminaSO;
 import so.usluga.VratiListuUslugaSO;
 
 /**
- * Serverski kontroler - jedini sloj koji obrada zahteva poznaje.
+ * Serverski kontroler - jedini sloj koji obrada zahteva poznaje. Ne sadrzi
+ * poslovnu logiku: za svaki zahtev pravi odgovarajucu sistemsku operaciju,
+ * pokrece je i vraca rezultat; provera preduslova i rad sa bazom su u so/.
  *
- * Kontroler ne sadrzi poslovnu logiku: za svaki zahtev pravi odgovarajucu
- * sistemsku operaciju, pokrece je i vraca njen rezultat. Sva provera preduslova
- * i rad sa bazom nalaze se u klasama paketa {@code so}.
- *
- * Metode su sinhronizovane zato sto server otvara nit po klijentu, a sve niti
- * dele jednu konekciju ka bazi sa iskljucenim automatskim potvrdjivanjem
- * transakcije. Sinhronizacija sprecava da se transakcije dve niti isprepletu.
+ * Metode su sinhronizovane jer sve niti dele jednu konekciju ka bazi - bez
+ * toga bi se transakcije dve niti mogle isprepletati.
  *
  * @author vukla
  */

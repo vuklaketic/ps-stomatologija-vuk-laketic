@@ -96,8 +96,7 @@ public class LoginForma extends JFrame {
         txtSifra.addActionListener(e -> prijaviSe());
         getRootPane().setDefaultButton(btnPrijava);
 
-        // panel sa poljima ostaje prirodne velicine i centriran je na sredini
-        // maksimizovanog prozora
+        // panel sa poljima ostaje prirodne velicine i centriran u maksimizovanom prozoru
         JPanel omotac = new JPanel(new GridBagLayout());
         omotac.add(panel, new GridBagConstraints());
         add(omotac, BorderLayout.CENTER);

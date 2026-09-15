@@ -49,7 +49,6 @@ public class UbaciTerminSO extends OpstaSistemskaOperacija {
         if (termin.getStavke() == null || termin.getStavke().isEmpty()) {
             throw new Exception("Termin mora imati bar jednu uslugu.");
         }
-        // ista usluga ne sme dva puta u jednom terminu
         List<Integer> videneUsluge = new ArrayList<>();
         for (StavkaTermina stavka : termin.getStavke()) {
             if (stavka.getUsluga() == null || stavka.getUsluga().getIdUsluga() <= 0) {

@@ -1,0 +1,39 @@
+FAZA 2 - TABELA FUNKCIONALNOSTI I UGOVORI (referentni tekst)
+======================================================================
+
+TABELA 1 - Povezivanje koncepata i funkcionalnosti
+(kolona "Funkcionalnosti" navodi koje operacije su PREDVIDJENE za svaki koncept
+u analizi - ovo NE znaci da sve moraju biti implementirane u GUI-ju, vec je
+referenca za poredjenje)
+
+1. Termin        - Kreiraj, Pretrazi, Promeni       (NEMA Obrisi u tabeli!)
+2. Pacijent      - Kreiraj, Pretrazi, Promeni, Obrisi
+3. Stomatolog    - Prijavi, Kreiraj, Pretrazi, Promeni, Obrisi
+4. Usluga        - Kreiraj, Pretrazi, Promeni, Obrisi
+5. Ordinacija    - Kreiraj, Pretrazi, Promeni, Obrisi
+6. Specijalizacija - Ubaci, Pretrazi, Promeni, Obrisi
+7. Stavka termina  - (nema navedenih, sastavni deo Termina)
+8. StSpec          - (nema navedenih, sastavni deo Stomatolog/Specijalizacija)
+
+NAPOMENA: aplikacija ima punu formu samo za Termin i Pacijent, i SAMO "Ubaci" za
+Specijalizaciju (SK21) - ovo je vec dogovoreno i objasnjeno ranije, NE treba menjati
+niti dodavati nove forme za Stomatolog/Usluga/Ordinaciju. Termin U APLIKACIJI ima i
+Obrisi (dugme/meni) iako ga tabela ne navodi - ovo je poznato "bonus" prosirenje
+iznad specifikacije, ne treba ga uklanjati, samo potvrdi da i dalje postoji i radi.
+
+======================================================================
+UGOVORI (iz 3.3 Fаze 2) - ORIGINALNE signature pre implementacije
+(OVDE JE VAZNA NAPOMENA: stvarna implementacija ima drugaciji skup operacija -
+UbaciTermin postoji umesto/pored KreirajTermin, ima vise operacija za Pacijent i
+Specijalizaciju nego sto su ovde navedene. Ovo poredjenje sluzi SAMO da se proveri
+da li OSNOVNA NAMENA/POSTUSLOVI svake originalne operacije imaju odgovarajucu
+implementaciju NEGDE u kodu, ne da se trazi bukvalno podudaranje naziva.)
+
+UG1: PrijaviStomatolog(KorisnickoIme, Sifra) - Postuslovi: Stomatolog prijavljen.
+UG2: KreirajTermin(Termin) - Postuslovi: Napravljen nov objekat klase Termin (u memoriji).
+UG3: UbaciSpecijalizacija(Specijalizacija) - Postuslovi: Nov objekat Specijalizacija.
+UG4: PromeniTermin(Termin) - Postuslovi: Objekat Termin promenjen.
+UG5: ObrisiPacijent(Pacijent) - Postuslovi: Objekat Pacijent obrisan.
+UG6: PretraziTermin(Termin) - Postuslovi: Pronadjen trazeni Termin.
+UG7: vratiListuTermin(KriterijumTermin, Lista<Termin>) - Postuslovi: Pronadjena lista Termin.
+UG8: vratiListuSviStomatolog(Lista<Stomatolog>) - Postuslovi: Pronadjena lista Stomatolog.

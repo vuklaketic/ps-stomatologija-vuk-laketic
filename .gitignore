@@ -29,3 +29,5 @@ replay_pid*
 **/nbproject/private/
 **/build/
 **/dist/
+.DS_Store
+Server/baza.properties
